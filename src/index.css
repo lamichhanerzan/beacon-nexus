@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=JetBrains+Mono:wght@400;500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #FBF9F4;
+  --color-manila: #E8DCC0;
+  --color-manila-deep: #D4C4A0;
+  --color-ink: #23201C;
+  --color-ink-soft: #5C564D;
+  --color-rule: #C9BFA9;
+  --color-signal: #1F5C4D;
+  --color-signal-light: #E6F0EC;
+  --color-flag: #8C2F1E;
+  --color-flag-bg: #FDF4F2;
+  
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-sans: 'Public Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  --paper: #FBF9F4;
+  --manila: #E8DCC0;
+  --manila-deep: #D4C4A0;
+  --ink: #23201C;
+  --ink-soft: #5C564D;
+  --rule: #C9BFA9;
+  --signal: #1F5C4D;
+  --flag: #8C2F1E;
+  
+  font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-size: 1.125rem; /* 18px body minimum requirement */
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Serif Utility */
+.font-display {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+.font-clinical {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Accessible focus outlines */
+*:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+
+/* Motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Large interactive targets for shaking hands */
+button, input, select, a {
+  min-height: 48px;
+}
+
+/* Pulse animation for active signal node */
+@keyframes signal-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(31, 92, 77, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(31, 92, 77, 0);
+  }
+}
+
+.pulse-signal {
+  animation: signal-pulse 2.5s infinite ease-in-out;
+}
