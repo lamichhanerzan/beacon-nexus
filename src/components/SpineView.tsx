@@ -6,6 +6,7 @@ import { CallScriptCard } from './CallScriptCard';
 import { QuestionsList } from './QuestionsList';
 import { RedFlagPanel } from './RedFlagPanel';
 import { ResourcesSection } from './ResourcesSection';
+import { ParishContextPanel } from './ParishContextPanel';
 import { VisitSummaryModal } from './VisitSummaryModal';
 import { Calendar, ChevronDown, Share2, Info, Clock, Building2, ShieldCheck, FileText } from 'lucide-react';
 
@@ -386,6 +387,9 @@ export const SpineView: React.FC<SpineViewProps> = ({
 
                     {/* Louisiana Help Near You */}
                     <ResourcesSection />
+
+                    {/* Louisiana Parish Context Panel (When Selected) */}
+                    <ParishContextPanel parishSlug={parishSlug} />
 
                     {/* Share Link Action Button */}
                     <div className="pt-4 border-t border-rule/60 text-center">
