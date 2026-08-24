@@ -4,16 +4,28 @@ import { CheckCircle2, Circle } from 'lucide-react';
 
 interface QuestionsListProps {
   questions: Question[];
+  tappedQuestions?: Record<number, boolean>;
+  onToggleQuestion?: (index: number) => void;
 }
 
-export const QuestionsList: React.FC<QuestionsListProps> = ({ questions }) => {
-  const [checkedIndices, setCheckedIndices] = useState<Record<number, boolean>>({});
+export const QuestionsList: React.FC<QuestionsListProps> = ({
+  questions,
+  tappedQuestions,
+  onToggleQuestion
+}) => {
+  const [internalChecked, setInternalChecked] = useState<Record<number, boolean>>({});
+
+  const checkedIndices = tappedQuestions ?? internalChecked;
 
   const toggleCheck = (index: number) => {
-    setCheckedIndices((prev) => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
+    if (onToggleQuestion) {
+      onToggleQuestion(index);
+    } else {
+      setInternalChecked((prev) => ({
+        ...prev,
+        [index]: !prev[index]
+      }));
+    }
   };
 
   const getSourceBadgeColor = (source: string) => {
@@ -52,7 +64,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({ questions }) => {
             >
               <button
                 type="button"
-                className="mt-0.5 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal rounded-full"
+                className="mt-0.5 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal rounded-full cursor-pointer"
                 aria-label={isChecked ? "Mark question as unasked" : "Mark question as asked"}
               >
                 {isChecked ? (

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { STAGES } from '../content/stages';
 import { PARISHES } from '../content/resources';
 import { computeDwell } from '../lib/dwell';
@@ -5,7 +6,8 @@ import { CallScriptCard } from './CallScriptCard';
 import { QuestionsList } from './QuestionsList';
 import { RedFlagPanel } from './RedFlagPanel';
 import { ResourcesSection } from './ResourcesSection';
-import { Calendar, ChevronDown, Share2, Info, Clock, Building2, ShieldCheck } from 'lucide-react';
+import { VisitSummaryModal } from './VisitSummaryModal';
+import { Calendar, ChevronDown, Share2, Info, Clock, Building2, ShieldCheck, FileText } from 'lucide-react';
 
 interface SpineViewProps {
   currentStageId: string;
@@ -28,10 +30,20 @@ export const SpineView: React.FC<SpineViewProps> = ({
   mode,
   onOpenShareModal
 }) => {
+  const [isVisitSummaryOpen, setIsVisitSummaryOpen] = useState(false);
+  const [tappedQuestions, setTappedQuestions] = useState<Record<number, boolean>>({});
+
   const currentStageIndex = STAGES.findIndex((s) => s.id === currentStageId);
   const activeStage = STAGES[currentStageIndex] || STAGES[0];
 
   const dwell = computeDwell(activeStage, dateEntered);
+
+  const handleToggleQuestion = (index: number) => {
+    setTappedQuestions((prev) => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
 
   return (
     <div className="w-full max-w-(--breakpoint-sm) mx-auto px-3 sm:px-0 pb-16">
@@ -272,7 +284,22 @@ export const SpineView: React.FC<SpineViewProps> = ({
                           <h4 className="font-display font-semibold text-lg text-ink m-0">
                             Questions to ask your care team
                           </h4>
-                          <QuestionsList questions={stage.questions} />
+                          <QuestionsList
+                            questions={stage.questions}
+                            tappedQuestions={tappedQuestions}
+                            onToggleQuestion={handleToggleQuestion}
+                          />
+
+                          {/* PREPARE FOR MY APPOINTMENT BUTTON */}
+                          <div className="pt-3">
+                            <button
+                              onClick={() => setIsVisitSummaryOpen(true)}
+                              className="w-full flex items-center justify-center space-x-2 px-5 py-3.5 rounded-lg font-sans text-base font-semibold bg-manila hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer"
+                            >
+                              <FileText className="w-5 h-5 text-signal" />
+                              <span>Prepare for my appointment</span>
+                            </button>
+                          </div>
                         </div>
                       </>
                     ) : (
@@ -334,7 +361,22 @@ export const SpineView: React.FC<SpineViewProps> = ({
                           <h4 className="font-display font-semibold text-lg text-ink m-0">
                             Questions to Ask Together
                           </h4>
-                          <QuestionsList questions={stage.questions} />
+                          <QuestionsList
+                            questions={stage.questions}
+                            tappedQuestions={tappedQuestions}
+                            onToggleQuestion={handleToggleQuestion}
+                          />
+
+                          {/* PREPARE FOR MY APPOINTMENT BUTTON */}
+                          <div className="pt-3">
+                            <button
+                              onClick={() => setIsVisitSummaryOpen(true)}
+                              className="w-full flex items-center justify-center space-x-2 px-5 py-3.5 rounded-lg font-sans text-base font-semibold bg-manila hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer"
+                            >
+                              <FileText className="w-5 h-5 text-signal" />
+                              <span>Prepare for my appointment</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -363,6 +405,17 @@ export const SpineView: React.FC<SpineViewProps> = ({
           );
         })}
       </div>
+
+      {/* VISIT PREPARATION WORKSHEET MODAL */}
+      <VisitSummaryModal
+        isOpen={isVisitSummaryOpen}
+        onClose={() => setIsVisitSummaryOpen(false)}
+        stage={activeStage}
+        dateEntered={dateEntered}
+        daysElapsed={dwell.daysElapsed}
+        questions={activeStage.questions}
+        tappedQuestions={tappedQuestions}
+      />
     </div>
   );
 };
