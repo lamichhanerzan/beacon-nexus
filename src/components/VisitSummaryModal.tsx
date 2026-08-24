@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Stage, Question } from '../content/stages';
+import { computeJourneyTimeline } from './JourneyTimelineModal';
 import { Printer, X, FileText } from 'lucide-react';
 
 interface VisitSummaryModalProps {
@@ -10,6 +11,7 @@ interface VisitSummaryModalProps {
   daysElapsed: number;
   questions: Question[];
   tappedQuestions: Record<number, boolean>;
+  stageDates: Record<string, string>;
 }
 
 export const VisitSummaryModal: React.FC<VisitSummaryModalProps> = ({
@@ -19,7 +21,8 @@ export const VisitSummaryModal: React.FC<VisitSummaryModalProps> = ({
   dateEntered,
   daysElapsed,
   questions,
-  tappedQuestions
+  tappedQuestions,
+  stageDates = {}
 }) => {
   if (!isOpen) return null;
 
@@ -45,6 +48,8 @@ export const VisitSummaryModal: React.FC<VisitSummaryModalProps> = ({
   const handlePrint = () => {
     window.print();
   };
+
+  const { recorded, totalDays, flaggedGaps } = computeJourneyTimeline(stageDates);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-ink/60 backdrop-blur-xs overflow-y-auto print:p-0 print:bg-white print:static">
@@ -107,6 +112,34 @@ export const VisitSummaryModal: React.FC<VisitSummaryModalProps> = ({
               <div><strong>Expected Window:</strong> {stage.timeline ? `${stage.timeline.minDays}–${stage.timeline.maxDays} days` : 'No published standard'}</div>
             </div>
           </div>
+
+          {/* Printable Journey Timeline Summary Block */}
+          {recorded.length > 0 && (
+            <div className="p-3 border border-black rounded-sm text-xs font-mono space-y-1.5 break-inside-avoid">
+              <div className="font-bold uppercase border-b border-gray-400 pb-1 flex justify-between">
+                <span>Journey Timeline Summary</span>
+                <span>Total elapsed: {totalDays} days</span>
+              </div>
+
+              <div className="space-y-1 pt-1">
+                {recorded.map((rec, rIdx) => (
+                  <div key={rIdx} className="flex justify-between">
+                    <span>• Step 0{rec.stage.order}: {rec.stage.shortLabel}</span>
+                    <span>{new Date(rec.dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  </div>
+                ))}
+              </div>
+
+              {flaggedGaps.length > 0 && (
+                <div className="pt-1.5 border-t border-gray-300">
+                  <div className="font-semibold text-gray-900">Timeline Variances:</div>
+                  {flaggedGaps.map((fg, fgIdx) => (
+                    <div key={fgIdx} className="text-[11px] text-gray-800">• {fg}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Questions & Ruled Lines for Answers */}
           <div className="space-y-5">

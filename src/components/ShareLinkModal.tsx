@@ -6,6 +6,7 @@ interface ShareLinkModalProps {
   onClose: () => void;
   stageId: string;
   dateEntered: string;
+  stageDates?: Record<string, string>;
   parishSlug?: string;
 }
 
@@ -14,20 +15,40 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
   onClose,
   stageId,
   dateEntered,
+  stageDates = {},
   parishSlug
 }) => {
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
 
-  // Build canonical share URL: /c?s=stageId&d=ISOdate&p=parishSlug
   const origin = window.location.origin;
-  const params = new URLSearchParams();
-  params.set('s', stageId);
-  if (dateEntered) params.set('d', dateEntered);
-  if (parishSlug) params.set('p', parishSlug);
 
-  const shareUrl = `${origin}/c?${params.toString()}`;
+  // 1. Attempt to build full URL with all stage dates if available
+  const fullParams = new URLSearchParams();
+  fullParams.set('s', stageId);
+  if (dateEntered) fullParams.set('d', dateEntered);
+  if (parishSlug) fullParams.set('p', parishSlug);
+
+  const datesSerialized = Object.entries(stageDates)
+    .filter(([_, dVal]) => !!dVal)
+    .map(([sId, dVal]) => `${sId}:${dVal}`)
+    .join(',');
+
+  if (datesSerialized) {
+    fullParams.set('dates', datesSerialized);
+  }
+
+  let shareUrl = `${origin}/c?${fullParams.toString()}`;
+
+  // 2. Constraint Check: If URL exceeds 1500 chars, share ONLY current stage
+  if (shareUrl.length > 1500) {
+    const compactParams = new URLSearchParams();
+    compactParams.set('s', stageId);
+    if (dateEntered) compactParams.set('d', dateEntered);
+    if (parishSlug) compactParams.set('p', parishSlug);
+    shareUrl = `${origin}/c?${compactParams.toString()}`;
+  }
 
   const handleCopy = async () => {
     try {
@@ -44,7 +65,7 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
       try {
         await navigator.share({
           title: 'BEACON Caregiver Link',
-          text: 'Here is the step I am currently in, along with caregiver actions and questions.',
+          text: 'Here is the step I am currently in, along with caregiver actions and my journey timeline.',
           url: shareUrl
         });
       } catch (err) {
@@ -76,7 +97,7 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
         </div>
 
         <p className="text-sm text-ink-soft mb-4 leading-relaxed">
-          This link opens the **Caregiver View** for this exact stage, including what actions they can take to support you. No personal information is stored or transmitted in this link.
+          This link opens the **Caregiver View** for this exact stage and includes your recorded milestone dates. No personal health information or accounts are used.
         </p>
 
         <div className="p-3 bg-manila/30 border border-rule rounded-md font-clinical text-xs text-ink truncate mb-4 select-all">

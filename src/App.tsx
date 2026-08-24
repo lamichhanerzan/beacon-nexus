@@ -5,6 +5,7 @@ import { SpineView } from './components/SpineView';
 import { Disclaimer } from './components/Disclaimer';
 import { ShareLinkModal } from './components/ShareLinkModal';
 import { AtlasModal } from './components/AtlasModal';
+import { JourneyTimelineModal } from './components/JourneyTimelineModal';
 import { HeartHandshake, User, ArrowRight, ShieldCheck, Clock, MapPin } from 'lucide-react';
 
 export function App() {
@@ -12,12 +13,14 @@ export function App() {
   const [mode, setMode] = useState<'patient' | 'caregiver'>('patient');
   const [stageId, setStageId] = useState<string>('finding');
   const [dateEntered, setDateEntered] = useState<string>('');
+  const [stageDates, setStageDates] = useState<Record<string, string>>({});
   const [parishSlug, setParishSlug] = useState<string>('');
 
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isAtlasModalOpen, setIsAtlasModalOpen] = useState<boolean>(false);
+  const [isTimelineModalOpen, setIsTimelineModalOpen] = useState<boolean>(false);
 
-  // Parse URL query parameters on load (e.g. /c?s=path_wait&d=2026-08-03&p=franklin or ?s=...)
+  // Parse URL query parameters on load (e.g. /c?s=path_wait&d=2026-08-03&p=franklin&dates=finding:2026-07-15...)
   useEffect(() => {
     const pathname = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
@@ -25,6 +28,7 @@ export function App() {
     const s = searchParams.get('s');
     const d = searchParams.get('d');
     const p = searchParams.get('p');
+    const datesRaw = searchParams.get('dates');
 
     if (pathname.includes('/c') || searchParams.has('s')) {
       if (pathname.includes('/c')) {
@@ -41,8 +45,39 @@ export function App() {
       if (p) {
         setParishSlug(p);
       }
+
+      if (datesRaw) {
+        const parsedDates: Record<string, string> = {};
+        datesRaw.split(',').forEach((pair) => {
+          const [id, dateVal] = pair.split(':');
+          if (id && dateVal && STAGES.some((st) => st.id === id)) {
+            parsedDates[id] = dateVal;
+          }
+        });
+        setStageDates(parsedDates);
+      }
     }
   }, []);
+
+  const handleStageDateChange = (targetStageId: string, newDate: string) => {
+    setStageDates((prev) => {
+      const updated = { ...prev };
+      if (newDate) {
+        updated[targetStageId] = newDate;
+      } else {
+        delete updated[targetStageId];
+      }
+      return updated;
+    });
+  };
+
+  const handleSelectStage = (newStageId: string) => {
+    setStageId(newStageId);
+    // Automatically retrieve existing date for newly selected stage if previously set
+    if (stageDates[newStageId]) {
+      setDateEntered(stageDates[newStageId]);
+    }
+  };
 
   const handleStart = (selectedMode: 'patient' | 'caregiver') => {
     setMode(selectedMode);
@@ -58,10 +93,10 @@ export function App() {
         onOpenAtlas={() => setIsAtlasModalOpen(true)}
       />
 
-      <main className="flex-1 w-full max-w-(--breakpoint-sm) mx-auto px-4 py-2">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-2">
         {!hasStarted ? (
           /* SCREEN A: LANDING PAGE */
-          <div className="space-y-8 py-4 sm:py-8 animate-in fade-in duration-300">
+          <div className="space-y-8 py-4 sm:py-8 animate-in fade-in duration-300 max-w-3xl mx-auto">
             
             {/* Hero Card */}
             <div className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
@@ -147,20 +182,26 @@ export function App() {
           <div className="animate-in fade-in duration-300">
             <SpineView
               currentStageId={stageId}
-              onSelectStage={(id) => setStageId(id)}
+              onSelectStage={handleSelectStage}
               dateEntered={dateEntered}
-              onDateChange={(d) => setDateEntered(d)}
+              onDateChange={(d) => {
+                setDateEntered(d);
+                handleStageDateChange(stageId, d);
+              }}
+              stageDates={stageDates}
+              onStageDateChange={handleStageDateChange}
               parishSlug={parishSlug}
               onParishChange={(p) => setParishSlug(p)}
               mode={mode}
               onOpenShareModal={() => setIsShareModalOpen(true)}
+              onOpenTimelineModal={() => setIsTimelineModalOpen(true)}
             />
           </div>
         )}
       </main>
 
       {/* Persistent Footer Disclaimer */}
-      <footer className="w-full max-w-(--breakpoint-sm) mx-auto px-4 pb-8">
+      <footer className="w-full max-w-4xl mx-auto px-4 pb-8">
         <Disclaimer variant="footer" />
         <p className="text-center font-clinical text-xs text-ink-soft mt-4 m-0">
           BEACON Diagnostic Limbo Companion • Built for Nexus Louisiana DevDays
@@ -173,6 +214,7 @@ export function App() {
         onClose={() => setIsShareModalOpen(false)}
         stageId={stageId}
         dateEntered={dateEntered}
+        stageDates={stageDates}
         parishSlug={parishSlug}
       />
 
@@ -180,6 +222,13 @@ export function App() {
       <AtlasModal
         isOpen={isAtlasModalOpen}
         onClose={() => setIsAtlasModalOpen(false)}
+      />
+
+      {/* Journey Timeline Modal */}
+      <JourneyTimelineModal
+        isOpen={isTimelineModalOpen}
+        onClose={() => setIsTimelineModalOpen(false)}
+        stageDates={stageDates}
       />
     </div>
   );
