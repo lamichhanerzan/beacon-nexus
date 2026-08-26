@@ -1,43 +1,85 @@
 import { useState, useEffect } from 'react';
 import { STAGES } from './content/stages';
+import type { ScreeningInput } from './lib/screening';
+import { evaluateScreenings } from './lib/screening';
 import { Header } from './components/Header';
 import { SpineView } from './components/SpineView';
+import { ScreeningForm } from './components/ScreeningForm';
+import { ScreeningResults } from './components/ScreeningResults';
 import { Disclaimer } from './components/Disclaimer';
 import { ShareLinkModal } from './components/ShareLinkModal';
 import { AtlasModal } from './components/AtlasModal';
 import { JourneyTimelineModal } from './components/JourneyTimelineModal';
-import { HeartHandshake, User, ArrowRight, ShieldCheck, Clock, MapPin } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Search, Activity, Home } from 'lucide-react';
 
 export function App() {
-  const [hasStarted, setHasStarted] = useState<boolean>(false);
+  const [activeModule, setActiveModule] = useState<'landing' | 'screening' | 'spine'>('landing');
   const [mode, setMode] = useState<'patient' | 'caregiver'>('patient');
+
+  // Spine state
   const [stageId, setStageId] = useState<string>('finding');
   const [dateEntered, setDateEntered] = useState<string>('');
   const [stageDates, setStageDates] = useState<Record<string, string>>({});
   const [parishSlug, setParishSlug] = useState<string>('');
 
+  // Screening state
+  const [screeningInput, setScreeningInput] = useState<ScreeningInput | null>(null);
+  const [screeningStep, setScreeningStep] = useState<'form' | 'results'>('form');
+
+  // Modals
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isAtlasModalOpen, setIsAtlasModalOpen] = useState<boolean>(false);
   const [isTimelineModalOpen, setIsTimelineModalOpen] = useState<boolean>(false);
 
-  // Parse URL query parameters on load (e.g. /c?s=path_wait&d=2026-08-03&p=franklin&dates=finding:2026-07-15...)
+  // Parse URL query parameters on load
   useEffect(() => {
     const pathname = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
 
-    const s = searchParams.get('s');
-    const d = searchParams.get('d');
-    const p = searchParams.get('p');
-    const datesRaw = searchParams.get('dates');
+    // 1. Check Screening route / params
+    if (pathname.includes('/screening') || searchParams.has('a')) {
+      setActiveModule('screening');
 
+      const aStr = searchParams.get('a');
+      if (aStr) {
+        const age = parseInt(aStr) || 50;
+        const sex = (searchParams.get('s') as any) || 'female';
+        const smokingStatus = (searchParams.get('sm') as any) || 'never';
+        const packYears = parseFloat(searchParams.get('py') || '0');
+        const yearsSinceQuit = parseInt(searchParams.get('yq') || '0');
+        const familyHistory = (searchParams.get('fh') || '').split(',').filter(Boolean);
+        const zip = searchParams.get('z') || undefined;
+        const pSlug = searchParams.get('p') || undefined;
+
+        setScreeningInput({
+          age,
+          sex,
+          smokingStatus,
+          packYears,
+          yearsSinceQuit,
+          familyHistory,
+          priorScreenings: [],
+          zip,
+          parishSlug: pSlug
+        });
+        setScreeningStep('results');
+      }
+    }
+
+    // 2. Check Diagnostic Spine route / params
     if (pathname.includes('/c') || searchParams.has('s')) {
+      setActiveModule('spine');
       if (pathname.includes('/c')) {
         setMode('caregiver');
       }
 
+      const s = searchParams.get('s');
+      const d = searchParams.get('d');
+      const p = searchParams.get('p');
+      const datesRaw = searchParams.get('dates');
+
       if (s && STAGES.some((st) => st.id === s)) {
         setStageId(s);
-        setHasStarted(true);
       }
       if (d) {
         setDateEntered(d);
@@ -73,15 +115,15 @@ export function App() {
 
   const handleSelectStage = (newStageId: string) => {
     setStageId(newStageId);
-    // Automatically retrieve existing date for newly selected stage if previously set
     if (stageDates[newStageId]) {
       setDateEntered(stageDates[newStageId]);
     }
   };
 
-  const handleStart = (selectedMode: 'patient' | 'caregiver') => {
-    setMode(selectedMode);
-    setHasStarted(true);
+  const handleScreeningFormSubmit = (input: ScreeningInput) => {
+    setScreeningInput(input);
+    setScreeningStep('results');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -93,83 +135,124 @@ export function App() {
         onOpenAtlas={() => setIsAtlasModalOpen(true)}
       />
 
+      {/* Module Navigation Breadcrumb when inside screening or spine */}
+      {activeModule !== 'landing' && (
+        <div className="w-full max-w-6xl mx-auto px-4 pt-2">
+          <button
+            onClick={() => setActiveModule('landing')}
+            className="inline-flex items-center space-x-1.5 font-clinical text-xs font-semibold text-signal hover:underline cursor-pointer"
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span>Return to BEACON Home</span>
+          </button>
+        </div>
+      )}
+
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-2">
-        {!hasStarted ? (
-          /* SCREEN A: LANDING PAGE */
-          <div className="space-y-8 py-4 sm:py-8 animate-in fade-in duration-300 max-w-3xl mx-auto">
+        {activeModule === 'landing' ? (
+          /* REVAMPED LANDING PAGE */
+          <div className="space-y-10 py-4 sm:py-8 animate-in fade-in duration-300 max-w-4xl mx-auto">
             
-            {/* Hero Card */}
-            <div className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-paper/80 border border-rule text-ink-soft font-clinical text-xs font-semibold">
+            {/* Headline & Subhead */}
+            <div className="text-center space-y-3">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-manila border border-manila-deep text-ink-soft font-clinical text-xs font-semibold">
                 <ShieldCheck className="w-4 h-4 text-signal" />
-                <span>Ochsner Health & Nexus LA Innovation Companion</span>
+                <span>Nexus LA Innovation & Ochsner Health Companion</span>
               </div>
 
-              <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-ink leading-tight m-0">
-                You're waiting on answers. Here's what's happening, and what to ask.
+              <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-ink leading-tight m-0">
+                Cancer care starts before the diagnosis.
               </h1>
 
-              <p className="text-lg sm:text-xl text-ink-soft leading-relaxed m-0">
-                The stretch between "something suspicious was found" and "I have a treatment plan" is confusing and quiet. BEACON makes that window visible and survivable.
+              <p className="text-lg sm:text-xl text-ink-soft leading-relaxed max-w-2xl mx-auto m-0">
+                Find out what screenings you're due for, or get your bearings if something's already been found.
               </p>
-
-              {/* Entry Action Buttons */}
-              <div className="pt-2 flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={() => handleStart('patient')}
-                  className="flex-1 inline-flex items-center justify-center space-x-3 px-6 py-4 rounded-xl font-sans text-lg font-bold bg-signal text-paper hover:bg-signal/90 transition-all shadow-sm hover:shadow cursor-pointer"
-                >
-                  <User className="w-5 h-5" />
-                  <span>I'm the Patient</span>
-                  <ArrowRight className="w-5 h-5 ml-1" />
-                </button>
-
-                <button
-                  onClick={() => handleStart('caregiver')}
-                  className="flex-1 inline-flex items-center justify-center space-x-3 px-6 py-4 rounded-xl font-sans text-lg font-bold bg-paper border-2 border-rule text-ink hover:bg-manila/40 transition-all shadow-xs cursor-pointer"
-                >
-                  <HeartHandshake className="w-5 h-5 text-signal" />
-                  <span>I'm Helping Someone</span>
-                  <ArrowRight className="w-5 h-5 ml-1 text-ink-soft" />
-                </button>
-              </div>
             </div>
 
-            {/* Core Value Highlights */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
-                <div className="flex items-center space-x-2 text-signal">
-                  <Clock className="w-4 h-4" />
-                  <h3 className="font-sans font-semibold text-base text-ink m-0">
-                    Evidence Benchmarks
-                  </h3>
+            {/* TWO LARGE CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              
+              {/* CARD A — I haven't been screened yet (Slightly more visual weight: --manila fill) */}
+              <div
+                onClick={() => {
+                  setActiveModule('screening');
+                  setScreeningStep('form');
+                }}
+                className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div className="space-y-3">
+                  <div className="p-3 rounded-full bg-paper/80 text-signal inline-block border border-rule">
+                    <Search className="w-6 h-6" />
+                  </div>
+
+                  <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink group-hover:text-signal transition-colors m-0">
+                    I haven't been screened yet
+                  </h2>
+
+                  <p className="text-base sm:text-lg text-ink-soft leading-relaxed m-0 italic">
+                    "Find out which tests you're eligible for and where to get them."
+                  </p>
                 </div>
-                <p className="text-sm text-ink-soft m-0">
-                  Every timeline claim carries published sources (CAP, ASCO, NCI, NCCN).
+
+                <div className="pt-6 flex items-center text-signal font-sans font-bold text-base group-hover:translate-x-1 transition-transform">
+                  <span>Check Screening Eligibility</span>
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </div>
+              </div>
+
+              {/* CARD B — Something was found (--paper fill with --rule border) */}
+              <div
+                onClick={() => setActiveModule('spine')}
+                className="bg-paper border-2 border-rule rounded-2xl p-6 sm:p-8 shadow-xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group hover:border-manila-deep"
+              >
+                <div className="space-y-3">
+                  <div className="p-3 rounded-full bg-manila/30 text-ink-soft inline-block border border-rule">
+                    <Activity className="w-6 h-6" />
+                  </div>
+
+                  <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink group-hover:text-signal transition-colors m-0">
+                    Something was found
+                  </h2>
+
+                  <p className="text-base sm:text-lg text-ink-soft leading-relaxed m-0 italic">
+                    "Understand where you are, what's next, and what to ask."
+                  </p>
+                </div>
+
+                <div className="pt-6 flex items-center text-ink-soft font-sans font-bold text-base group-hover:text-ink group-hover:translate-x-1 transition-all">
+                  <span>Open Diagnostic Companion</span>
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </div>
+              </div>
+
+            </div>
+
+            {/* QUIET ROW OF THREE FACTS */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-rule/60">
+              <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
+                <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
+                  Most Screenings Are Free
+                </span>
+                <p className="text-sm text-ink-soft m-0 leading-relaxed">
+                  Under the Affordable Care Act, most insurance covers preventive cancer screening with no copay.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
-                <div className="flex items-center space-x-2 text-signal">
-                  <ShieldCheck className="w-4 h-4" />
-                  <h3 className="font-sans font-semibold text-base text-ink m-0">
-                    Zero Health Data Stored
-                  </h3>
-                </div>
-                <p className="text-sm text-ink-soft m-0">
-                  No accounts, no EHR, no personal health info collected. Ever.
+                <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
+                  Colon Screening Starts at 45
+                </span>
+                <p className="text-sm text-ink-soft m-0 leading-relaxed">
+                  This changed in 2021. Many people still think it's 50.
                 </p>
               </div>
 
               <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
-                <div className="flex items-center space-x-2 text-signal">
-                  <MapPin className="w-4 h-4" />
-                  <h3 className="font-sans font-semibold text-base text-ink m-0">
-                    Louisiana Navigation
-                  </h3>
-                </div>
-                <p className="text-sm text-ink-soft m-0">
-                  Hardcoded local resources across all 64 Louisiana parishes.
+                <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
+                  Some Tests Done at Home
+                </span>
+                <p className="text-sm text-ink-soft m-0 leading-relaxed">
+                  Stool-based colorectal tests are mailed to your home and mailed back.
                 </p>
               </div>
             </div>
@@ -177,8 +260,26 @@ export function App() {
             {/* Mandatory Landing Disclaimer */}
             <Disclaimer variant="landing" />
           </div>
+        ) : activeModule === 'screening' ? (
+          /* SCREENING MODULE */
+          <div className="animate-in fade-in duration-300">
+            {screeningStep === 'form' || !screeningInput ? (
+              <ScreeningForm
+                mode={mode}
+                initialValues={screeningInput || undefined}
+                onSubmit={handleScreeningFormSubmit}
+              />
+            ) : (
+              <ScreeningResults
+                input={screeningInput}
+                results={evaluateScreenings(screeningInput)}
+                mode={mode}
+                onEditInputs={() => setScreeningStep('form')}
+              />
+            )}
+          </div>
         ) : (
-          /* SCREEN B, C, D: SPINE FOLDER VIEW */
+          /* DIAGNOSTIC SPINE MODULE */
           <div className="animate-in fade-in duration-300">
             <SpineView
               currentStageId={stageId}
