@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { STAGES } from './content/stages';
 import type { ScreeningInput } from './lib/screening';
 import { evaluateScreenings } from './lib/screening';
@@ -10,7 +10,12 @@ import { Disclaimer } from './components/Disclaimer';
 import { ShareLinkModal } from './components/ShareLinkModal';
 import { AtlasModal } from './components/AtlasModal';
 import { JourneyTimelineModal } from './components/JourneyTimelineModal';
-import { ArrowRight, Search, Activity, Home } from 'lucide-react';
+import { BeaconLogo } from './components/BeaconLogo';
+import { CalendarView } from './components/CalendarView';
+import { AppointmentForm, type UserAppointment } from './components/AppointmentForm';
+import { AppointmentPrepSheet } from './components/AppointmentPrepSheet';
+import { APPOINTMENT_TYPES } from './content/appointments';
+import { ArrowRight, Search, Activity, Calendar as CalendarIcon } from 'lucide-react';
 
 // Desktop handoff shell components
 import { DesktopHeader, type DesktopScreen } from './components/desktop/DesktopHeader';
@@ -25,7 +30,7 @@ type Marks = Record<string, Record<number, boolean>>;
 export function App() {
   const isDesktopShell = new URLSearchParams(window.location.search).has('desktop');
 
-  const [activeModule, setActiveModule] = useState<'landing' | 'screening' | 'spine'>('landing');
+  const [activeModule, setActiveModule] = useState<'landing' | 'screening' | 'spine' | 'appointments'>('landing');
   const [mode, setMode] = useState<'patient' | 'caregiver'>('patient');
 
   // Spine state
@@ -37,6 +42,12 @@ export function App() {
   // Screening state
   const [screeningInput, setScreeningInput] = useState<ScreeningInput | null>(null);
   const [screeningStep, setScreeningStep] = useState<'form' | 'results'>('form');
+
+  // Appointments state
+  const [appointments, setAppointments] = useState<UserAppointment[]>([]);
+  const [selectedAppointment, setSelectedAppointment] = useState<UserAppointment | null>(null);
+  const [isApptFormOpen, setIsApptFormOpen] = useState<boolean>(false);
+  const [apptFormInitialDate, setApptFormInitialDate] = useState<string | undefined>(undefined);
 
   // Desktop Shell specific state
   const [desktopScreen, setDesktopScreen] = useState<DesktopScreen>('landing');
@@ -64,7 +75,23 @@ export function App() {
       }
     }
 
-    // 1. Check Screening route / params
+    // 1. Check Appointment Route or Shared Appointment params (?t=typeId&d=date)
+    if (pathname.includes('/appointments') || searchParams.has('t')) {
+      setActiveModule('appointments');
+      const t = searchParams.get('t');
+      const d = searchParams.get('d') || new Date().toISOString().split('T')[0];
+
+      if (t && APPOINTMENT_TYPES.some((apt) => apt.id === t)) {
+        const sharedAppt: UserAppointment = {
+          id: `shared_${t}_${d}`,
+          typeId: t,
+          date: d
+        };
+        setSelectedAppointment(sharedAppt);
+      }
+    }
+
+    // 2. Check Screening route / params
     if (pathname.includes('/screening') || searchParams.has('a')) {
       setActiveModule('screening');
 
@@ -94,7 +121,7 @@ export function App() {
       }
     }
 
-    // 2. Check Journey / Diagnostic Spine route / params
+    // 3. Check Journey / Diagnostic Spine route / params
     if (pathname.includes('/journey') || pathname.includes('/c') || searchParams.has('s')) {
       setActiveModule('spine');
       if (pathname.includes('/c')) {
@@ -154,6 +181,12 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleAddAppointment = (newAppt: UserAppointment) => {
+    setAppointments((prev) => [...prev, newAppt]);
+    setSelectedAppointment(newAppt);
+    setActiveModule('appointments');
+  };
+
   const toggleMarks = (
     setter: React.Dispatch<React.SetStateAction<Marks>>,
     index: number
@@ -171,6 +204,11 @@ export function App() {
 
   const currentStage = STAGES.find((s) => s.id === stageId) ?? STAGES[0];
   const questionCount = currentStage.questions.length + (custom[stageId]?.length ?? 0);
+
+  // Sorted upcoming appointments
+  const upcomingAppointments = [...appointments]
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .filter((a) => new Date(a.date + 'T00:00:00') >= new Date(new Date().toDateString()));
 
   // If ?desktop flag is present in URL, render desktop handoff shell
   if (isDesktopShell) {
@@ -267,129 +305,207 @@ export function App() {
   // Standard BEACON App View
   return (
     <div className="min-h-screen bg-paper text-ink flex flex-col font-sans selection:bg-signal-light selection:text-signal">
-      {/* Top Header tab bar with persistent Patient/Caregiver mode toggle */}
+      {/* Header tab bar with persistent Patient/Caregiver mode toggle */}
       <Header
         mode={mode}
         onModeChange={(newMode) => setMode(newMode)}
         onOpenAtlas={() => setIsAtlasModalOpen(true)}
+        onGoHome={() => {
+          setActiveModule('landing');
+          setSelectedAppointment(null);
+        }}
       />
 
-      {/* Module Navigation Breadcrumb when inside screening or spine */}
-      {activeModule !== 'landing' && (
-        <div className="w-full max-w-6xl mx-auto px-4 pt-2">
-          <button
-            onClick={() => setActiveModule('landing')}
-            className="inline-flex items-center space-x-1.5 font-clinical text-xs font-semibold text-signal hover:underline cursor-pointer"
-          >
-            <Home className="w-3.5 h-3.5" />
-            <span>Return to BEACON Home</span>
-          </button>
-        </div>
-      )}
-
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-2">
+      <main className="flex-1 w-full max-w-[1200px] mx-auto px-5 sm:px-8 py-4">
         {activeModule === 'landing' ? (
-          /* RESTRUCTURED LANDING PAGE */
-          <div className="space-y-10 py-4 sm:py-8 animate-in fade-in duration-300 max-w-4xl mx-auto">
+          /* RESTRUCTURED TWO-COLUMN LANDING PAGE (≥1024px) & SINGLE COLUMN (<1024px) */
+          <div className="space-y-8 animate-in fade-in duration-300">
             
-            {/* Logo / Wordmark Header & Tagline */}
-            <div className="text-center space-y-2">
-              <span className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-ink block">
-                BEACON
-              </span>
-              <p className="font-display italic text-lg sm:text-xl text-ink-soft m-0">
-                "Cancer care starts before the diagnosis."
-              </p>
-            </div>
-
-            {/* TWO PRIMARY CARDS */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-12 items-start">
               
-              {/* CARD A — "I haven't been screened yet" (--manila fill, higher visual weight) */}
-              <div
-                onClick={() => {
-                  setActiveModule('screening');
-                  setScreeningStep('form');
+              {/* LEFT COLUMN (~55% DESKTOP) */}
+              <div className="space-y-6">
+                
+                {/* Logo & Tagline (Logo sits directly on paper, no colored container) */}
+                <div className="space-y-2 text-left">
+                  <BeaconLogo size="lg" showWordmark={true} />
+                  <p className="font-display italic text-xl sm:text-2xl text-ink-soft m-0 pt-1">
+                    "Cancer care starts before the diagnosis."
+                  </p>
+                </div>
+
+                {/* TWO PRIMARY CARDS (STACKED VERTICALLY FOR STRONG PRESENCE) */}
+                <div className="space-y-5 pt-2">
+                  
+                  {/* CARD A — "I haven't been screened yet" (--manila fill, higher visual weight) */}
+                  <div
+                    onClick={() => {
+                      setActiveModule('screening');
+                      setScreeningStep('form');
+                    }}
+                    className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+                  >
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-full bg-paper/80 text-signal inline-block border border-rule">
+                        <Search className="w-6 h-6" />
+                      </div>
+
+                      <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink group-hover:text-signal transition-colors m-0">
+                        I haven't been screened yet
+                      </h2>
+
+                      <p className="text-base text-ink-soft leading-relaxed m-0 italic">
+                        "Find out which tests you're due for and where to get them near you."
+                      </p>
+                    </div>
+
+                    <div className="pt-6 flex items-center text-signal font-sans font-bold text-base group-hover:translate-x-1 transition-transform">
+                      <span>Check Screening Eligibility</span>
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </div>
+                  </div>
+
+                  {/* CARD B — "I've been screened" (--paper fill with --rule border) */}
+                  <div
+                    onClick={() => setActiveModule('spine')}
+                    className="bg-paper border-2 border-rule rounded-2xl p-6 sm:p-8 shadow-xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group hover:border-manila-deep"
+                  >
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-full bg-manila/30 text-ink-soft inline-block border border-rule">
+                        <Activity className="w-6 h-6" />
+                      </div>
+
+                      <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink group-hover:text-signal transition-colors m-0">
+                        I've been screened
+                      </h2>
+
+                      <p className="text-base text-ink-soft leading-relaxed m-0 italic">
+                        "Something was found, or you're waiting on results."
+                      </p>
+                    </div>
+
+                    <div className="pt-6 flex items-center text-ink-soft font-sans font-bold text-base group-hover:text-ink group-hover:translate-x-1 transition-all">
+                      <span>Open Diagnostic Journey</span>
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* QUIET ROW OF THREE FACTS */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-rule/60">
+                  <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
+                    <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
+                      Most screenings are free
+                    </span>
+                    <p className="text-xs text-ink-soft m-0 leading-relaxed">
+                      Under the Affordable Care Act, most insurance covers preventive cancer screening with no copay.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
+                    <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
+                      Colon screening starts at 45
+                    </span>
+                    <p className="text-xs text-ink-soft m-0 leading-relaxed">
+                      This changed in 2021. Many people still think it's 50.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
+                    <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
+                      Some tests are done at home
+                    </span>
+                    <p className="text-xs text-ink-soft m-0 leading-relaxed">
+                      Stool-based colorectal tests are mailed to you.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* RIGHT COLUMN (~45% DESKTOP): CALENDAR & UPCOMING APPOINTMENTS */}
+              <div className="space-y-6">
+                <CalendarView
+                  appointments={appointments}
+                  onSelectAppointment={(appt) => {
+                    setSelectedAppointment(appt);
+                    setActiveModule('appointments');
+                  }}
+                  onOpenAddModal={(dateStr) => {
+                    setApptFormInitialDate(dateStr);
+                    setIsApptFormOpen(true);
+                  }}
+                />
+
+                {/* UPCOMING APPOINTMENTS COMPACT LIST */}
+                {upcomingAppointments.length > 0 && (
+                  <div className="p-5 rounded-2xl border border-rule bg-paper shadow-xs space-y-3">
+                    <h4 className="font-display font-bold text-lg text-ink m-0 flex items-center space-x-2">
+                      <CalendarIcon className="w-5 h-5 text-signal" />
+                      <span>Upcoming Appointments ({upcomingAppointments.length})</span>
+                    </h4>
+
+                    <div className="space-y-2">
+                      {upcomingAppointments.slice(0, 3).map((appt) => {
+                        const typeObj = APPOINTMENT_TYPES.find((t) => t.id === appt.typeId);
+                        return (
+                          <div
+                            key={appt.id}
+                            onClick={() => {
+                              setSelectedAppointment(appt);
+                              setActiveModule('appointments');
+                            }}
+                            className="p-3.5 rounded-xl border border-rule bg-manila/20 hover:bg-manila/50 transition-colors cursor-pointer flex items-center justify-between gap-3 group"
+                          >
+                            <div className="space-y-0.5">
+                              <div className="font-sans font-bold text-sm text-ink group-hover:text-signal transition-colors">
+                                {typeObj?.label || 'Appointment'}
+                              </div>
+                              <div className="font-clinical text-xs text-ink-soft flex items-center space-x-2">
+                                <span>{new Date(appt.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                {appt.time && <span>• {appt.time}</span>}
+                              </div>
+                            </div>
+
+                            <div className="inline-flex items-center space-x-1 font-sans text-xs font-bold text-signal group-hover:translate-x-1 transition-transform">
+                              <span>Prep Sheet</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+          </div>
+        ) : activeModule === 'appointments' ? (
+          /* APPOINTMENT PREP SHEET MODULE */
+          <div className="animate-in fade-in duration-300">
+            {selectedAppointment ? (
+              <AppointmentPrepSheet
+                appointment={selectedAppointment}
+                mode={mode}
+                onBack={() => {
+                  setActiveModule('landing');
+                  setSelectedAppointment(null);
                 }}
-                className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group min-h-[220px]"
-              >
-                <div className="space-y-3">
-                  <div className="p-3 rounded-full bg-paper/80 text-signal inline-block border border-rule">
-                    <Search className="w-6 h-6" />
-                  </div>
-
-                  <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink group-hover:text-signal transition-colors m-0">
-                    I haven't been screened yet
-                  </h2>
-
-                  <p className="text-base text-ink-soft leading-relaxed m-0 italic">
-                    "Find out which tests you're due for and where to get them near you."
-                  </p>
-                </div>
-
-                <div className="pt-6 flex items-center text-signal font-sans font-bold text-base group-hover:translate-x-1 transition-transform">
-                  <span>Check Screening Eligibility</span>
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </div>
+              />
+            ) : (
+              <div className="text-center py-12 space-y-4">
+                <p className="text-lg text-ink-soft italic">No appointment selected.</p>
+                <button
+                  onClick={() => setActiveModule('landing')}
+                  className="px-5 py-2.5 rounded-lg font-sans font-bold bg-signal text-paper"
+                >
+                  Return to Home
+                </button>
               </div>
-
-              {/* CARD B — "I've been screened" (--paper fill with --rule border) */}
-              <div
-                onClick={() => setActiveModule('spine')}
-                className="bg-paper border-2 border-rule rounded-2xl p-6 sm:p-8 shadow-xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group hover:border-manila-deep min-h-[220px]"
-              >
-                <div className="space-y-3">
-                  <div className="p-3 rounded-full bg-manila/30 text-ink-soft inline-block border border-rule">
-                    <Activity className="w-6 h-6" />
-                  </div>
-
-                  <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink group-hover:text-signal transition-colors m-0">
-                    I've been screened
-                  </h2>
-
-                  <p className="text-base text-ink-soft leading-relaxed m-0 italic">
-                    "Something was found, or you're waiting on results."
-                  </p>
-                </div>
-
-                <div className="pt-6 flex items-center text-ink-soft font-sans font-bold text-base group-hover:text-ink group-hover:translate-x-1 transition-all">
-                  <span>Open Diagnostic Journey</span>
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </div>
-              </div>
-
-            </div>
-
-            {/* QUIET ROW OF THREE FACTS */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-rule/60">
-              <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
-                <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
-                  Most screenings are free
-                </span>
-                <p className="text-sm text-ink-soft m-0 leading-relaxed">
-                  Under the Affordable Care Act, most insurance covers preventive cancer screening with no copay.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
-                <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
-                  Colon screening starts at 45
-                </span>
-                <p className="text-sm text-ink-soft m-0 leading-relaxed">
-                  This changed in 2021. Many people still think it's 50.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
-                <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
-                  Some tests are done at home
-                </span>
-                <p className="text-sm text-ink-soft m-0 leading-relaxed">
-                  Stool-based colorectal tests are mailed to you.
-                </p>
-              </div>
-            </div>
-
+            )}
           </div>
         ) : activeModule === 'screening' ? (
           /* SCREENING MODULE */
@@ -432,13 +548,21 @@ export function App() {
         )}
       </main>
 
-      {/* Persistent Global Footer Disclaimer (One of exactly two disclaimers in the app) */}
-      <footer className="w-full max-w-4xl mx-auto px-4 pb-8">
+      {/* Persistent Global Footer Disclaimer */}
+      <footer className="w-full max-w-[1200px] mx-auto px-5 sm:px-8 pb-8">
         <Disclaimer variant="footer" />
         <p className="text-center font-clinical text-xs text-ink-soft mt-4 m-0">
           BEACON Diagnostic Limbo Companion • Built for Nexus Louisiana DevDays
         </p>
       </footer>
+
+      {/* Appointment Form Modal */}
+      <AppointmentForm
+        isOpen={isApptFormOpen}
+        onClose={() => setIsApptFormOpen(false)}
+        onSave={handleAddAppointment}
+        initialDate={apptFormInitialDate}
+      />
 
       {/* Share Link Modal */}
       <ShareLinkModal
