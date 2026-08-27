@@ -11,7 +11,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas, onGoHome }) => {
   return (
-    <header className="w-full max-w-6xl mx-auto mb-6 pt-4 px-3 sm:px-4">
+    <header className="w-full max-w-[1700px] mx-auto mb-6 pt-4 px-4 sm:px-8">
       {/* Folder Tab Top Spine Styling */}
       <div className="bg-manila border-t-2 border-x-2 border-manila-deep rounded-t-xl p-4 sm:p-5 shadow-xs flex items-center justify-between">
         <button
@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas,
           <div className="relative inline-flex bg-paper p-1 rounded-lg border border-rule">
             <button
               onClick={() => onModeChange('patient')}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
                 mode === 'patient'
                   ? 'bg-signal text-paper shadow-xs'
                   : 'text-ink-soft hover:text-ink'
@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas,
             </button>
             <button
               onClick={() => onModeChange('caregiver')}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
                 mode === 'caregiver'
                   ? 'bg-signal text-paper shadow-xs'
                   : 'text-ink-soft hover:text-ink'

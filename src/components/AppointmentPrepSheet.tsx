@@ -133,7 +133,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto px-4 py-4 space-y-6 animate-in fade-in duration-300 print:p-0 print:m-0 print:max-w-none print:w-full">
+    <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-6 py-4 space-y-6 animate-in fade-in duration-300 print:p-0 print:m-0 print:max-w-none print:w-full">
       
       {/* SCREEN BACK NAVIGATION & TOP ACTIONS BAR (Hidden on Print) */}
       <div className="flex items-center justify-between print:hidden border-b border-rule/60 pb-3">
@@ -166,9 +166,9 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
 
       {/* ========================================================================= */}
       {/* DESKTOP DASHBOARD GRID LAYOUT (SCREEN VIEW) */}
-      {/* 3-Column Layout: Left Rail (~240px) | Center Content | Right Rail (~280px) */}
+      {/* 3-Column Layout across full screen: Left Rail (~240px) | Center Content (Flex 1) | Right Rail (~300px) */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr_300px] gap-6 items-start print:hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6 lg:gap-8 items-start print:hidden">
         
         {/* ------------------------------------------------------------- */}
         {/* LEFT RAIL COLUMN: APPOINTMENT INFO CARD + INDEX + ACTIONS */}
@@ -191,7 +191,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
               </span>
             </div>
 
-            <div className="space-y-1 pt-2 border-t border-rule/50 text-xs text-ink-soft font-sans">
+            <div className="space-y-1.5 pt-2 border-t border-rule/50 text-xs text-ink-soft font-sans">
               <div className="flex items-center space-x-1.5 font-medium text-ink">
                 <Calendar className="w-3.5 h-3.5 text-signal shrink-0" />
                 <span>{formattedDate}</span>
@@ -204,7 +204,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
                 </div>
               )}
 
-              <div className="font-clinical text-[11px] text-ink-soft pt-1">
+              <div className="font-clinical text-[11px] text-ink-soft pt-0.5">
                 Typical length: {apptType.typicalLength}
               </div>
 
@@ -280,15 +280,15 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
         </aside>
 
         {/* ------------------------------------------------------------- */}
-        {/* CENTER COLUMN: MAIN CONTENT AREA */}
+        {/* CENTER COLUMN: MAIN CONTENT AREA (EXPANDS TO FILL WIDESCREEN) */}
         {/* ------------------------------------------------------------- */}
-        <main className="space-y-6">
+        <main className="space-y-6 min-w-0">
           
           {/* TOP ROW: 2 CARDS SIDE-BY-SIDE (WHAT THIS APPOINTMENT IS & WHAT YOU'LL LEARN) */}
-          <div id="sec-visit" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div id="sec-visit" className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             
             {/* Card 1: What this appointment is */}
-            <div className="bg-paper border border-rule rounded-2xl p-5 shadow-2xs space-y-2 flex flex-col justify-between">
+            <div className="bg-paper border border-rule rounded-2xl p-6 shadow-2xs space-y-2 flex flex-col justify-between">
               <div>
                 <span className="font-clinical text-[10px] font-bold text-ink-soft uppercase tracking-widest block">
                   What this appointment is
@@ -300,7 +300,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
             </div>
 
             {/* Card 2: What you'll learn from it (Soft Teal Tint) */}
-            <div className="bg-[#EBF4F0] border border-[#C5E1D4] rounded-2xl p-5 shadow-2xs space-y-2 flex flex-col justify-between">
+            <div className="bg-[#EBF4F0] border border-[#C5E1D4] rounded-2xl p-6 shadow-2xs space-y-2 flex flex-col justify-between">
               <div>
                 <span className="font-clinical text-[10px] font-bold text-emerald-800 uppercase tracking-widest block flex items-center space-x-1.5">
                   <ShieldCheck className="w-4 h-4 text-signal" />
@@ -314,19 +314,19 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
 
           </div>
 
-          {/* MIDDLE ROW: WHAT USUALLY HAPPENS, IN ORDER (HORIZONTAL 4-STEP CARDS) */}
-          <div id="sec-happens" className="bg-paper border border-rule rounded-2xl p-5 sm:p-6 shadow-2xs space-y-4">
+          {/* MIDDLE ROW: WHAT USUALLY HAPPENS, IN ORDER (RESPONSIVE STEP CARDS) */}
+          <div id="sec-happens" className="bg-paper border border-rule rounded-2xl p-6 shadow-2xs space-y-4">
             <span className="font-clinical text-[10px] font-bold text-ink-soft uppercase tracking-widest block">
               What usually happens, in order
             </span>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               {apptType.whatHappens.map((step, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-manila/20 border border-rule/70 space-y-1.5 flex flex-col">
+                <div key={idx} className="p-4 rounded-xl bg-manila/20 border border-rule/70 space-y-2 flex flex-col justify-start">
                   <span className="font-clinical text-xs font-bold text-signal">
                     0{idx + 1}
                   </span>
-                  <p className="font-sans text-sm text-ink leading-snug m-0">
+                  <p className="font-sans text-sm sm:text-base text-ink leading-relaxed m-0 font-medium">
                     {formatCaregiverText(step, isCaregiver)}
                   </p>
                 </div>
@@ -334,8 +334,8 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
             </div>
           </div>
 
-          {/* QUESTIONS TO ASK PANEL (2-COLUMN GRID WITH PROGRESS BAR & WHY TOGGLES) */}
-          <div id="sec-questions" className="bg-paper border border-rule rounded-2xl p-5 sm:p-6 shadow-2xs space-y-5">
+          {/* QUESTIONS TO ASK PANEL (GENEROUS 2-COLUMN GRID WITH SPACE TO BREATHE) */}
+          <div id="sec-questions" className="bg-paper border border-rule rounded-2xl p-6 shadow-2xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rule/60 pb-3">
               <div>
                 <h2 className="font-display text-2xl font-bold text-ink m-0">
@@ -352,8 +352,8 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
               </div>
             </div>
 
-            {/* 2-Column Question Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Generous 2-Column Question Cards Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
               {apptType.questions.map((q, qIdx) => {
                 const isAsked = !!askedQuestions[qIdx];
                 const isWhyOpen = !!expandedWhy[qIdx];
@@ -361,17 +361,17 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
                 return (
                   <div
                     key={qIdx}
-                    className={`p-4 rounded-xl border transition-all flex flex-col justify-between space-y-3 ${
+                    className={`p-5 rounded-xl border transition-all flex flex-col justify-between space-y-4 ${
                       isAsked
                         ? 'bg-manila/20 border-rule/60 text-ink-soft'
                         : 'bg-paper border-rule shadow-2xs hover:border-manila-deep'
                     }`}
                   >
                     <div className="space-y-2">
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start justify-between gap-3">
                         <button
                           onClick={() => toggleAskedQuestion(qIdx)}
-                          className="flex items-start space-x-2.5 text-left cursor-pointer focus:outline-none"
+                          className="flex items-start space-x-3 text-left cursor-pointer focus:outline-none"
                         >
                           <div className="shrink-0 mt-0.5">
                             {isAsked ? (
@@ -380,7 +380,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
                               <Square className="w-5 h-5 text-ink-soft" />
                             )}
                           </div>
-                          <span className={`font-sans text-sm sm:text-base font-bold leading-snug ${isAsked ? 'line-through text-ink-soft' : 'text-ink'}`}>
+                          <span className={`font-sans text-base sm:text-lg font-bold leading-snug ${isAsked ? 'line-through text-ink-soft' : 'text-ink'}`}>
                             "{formatCaregiverText(q.text, isCaregiver)}"
                           </span>
                         </button>
@@ -395,17 +395,17 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
                     <div>
                       <button
                         onClick={() => toggleExpandWhy(qIdx)}
-                        className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-md font-clinical text-[11px] font-semibold bg-manila/60 hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer"
+                        className="inline-flex items-center space-x-1 px-3 py-1 rounded-md font-clinical text-[11px] font-semibold bg-manila/60 hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer"
                       >
-                        <HelpCircle className="w-3 h-3 text-signal" />
+                        <HelpCircle className="w-3.5 h-3.5 text-signal" />
                         <span>WHY ASK THIS?</span>
-                        {isWhyOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        {isWhyOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                       </button>
 
                       {/* Expanded Rationale Box */}
                       {isWhyOpen && (
-                        <div className="mt-2.5 p-3 rounded-lg bg-manila/40 border border-rule text-xs text-ink leading-relaxed animate-in fade-in duration-200">
-                          <strong className="font-clinical uppercase text-[10px] text-signal block mb-0.5">Clinical Rationale:</strong>
+                        <div className="mt-3 p-4 rounded-xl bg-manila/40 border border-rule text-sm text-ink leading-relaxed font-medium animate-in fade-in duration-200">
+                          <strong className="font-clinical uppercase text-[10px] text-signal block mb-1">Clinical Rationale:</strong>
                           {formatCaregiverText(q.why, isCaregiver)}
                         </div>
                       )}
@@ -417,7 +417,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
           </div>
 
           {/* NOTES DURING THE VISIT */}
-          <div id="sec-notes" className="bg-paper border border-rule rounded-2xl p-5 sm:p-6 shadow-2xs space-y-3">
+          <div id="sec-notes" className="bg-paper border border-rule rounded-2xl p-6 shadow-2xs space-y-3">
             <span className="font-clinical text-[10px] font-bold text-ink-soft uppercase tracking-widest block">
               Notes during the visit
             </span>
@@ -427,7 +427,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
               value={visitNotes}
               onChange={(e) => setVisitNotes(e.target.value)}
               placeholder="Write what they say here — exact words, names, dates. You will not remember it later."
-              className="w-full p-4 rounded-xl border border-rule bg-paper font-sans text-sm text-ink focus:outline-none focus:ring-2 focus:ring-signal leading-relaxed resize-y"
+              className="w-full p-4 rounded-xl border border-rule bg-paper font-sans text-sm sm:text-base text-ink focus:outline-none focus:ring-2 focus:ring-signal leading-relaxed resize-y"
             />
           </div>
 
