@@ -161,7 +161,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
         {/* ======================================================== */}
         {/* RIGHT PANEL (DESKTOP) & MAIN CONTAINER (MOBILE) */}
         {/* ======================================================== */}
-        <div ref={rightPanelRef} className="flex-1 lg:max-w-[780px] w-full">
+        <div ref={rightPanelRef} className="flex-1 min-w-0 w-full">
           
           {/* MOBILE ACCORDION STACK (< 1024px) */}
           <div className="lg:hidden">

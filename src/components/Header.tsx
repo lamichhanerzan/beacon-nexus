@@ -19,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas,
           className="flex items-center space-x-3 text-left cursor-pointer bg-transparent border-0 p-0 focus:outline-none focus:ring-2 focus:ring-signal rounded-lg"
           title="Return to BEACON Home"
         >
+          {/* Bigger, bolder logo & wordmark */}
           <BeaconLogo size="sm" showWordmark={true} />
         </button>
 
@@ -27,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas,
           <div className="relative inline-flex bg-paper p-1 rounded-lg border border-rule">
             <button
               onClick={() => onModeChange('patient')}
-              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
+              className={`flex items-center space-x-1.5 px-4 py-2 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
                 mode === 'patient'
                   ? 'bg-signal text-paper shadow-xs'
                   : 'text-ink-soft hover:text-ink'
@@ -39,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas,
             </button>
             <button
               onClick={() => onModeChange('caregiver')}
-              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
+              className={`flex items-center space-x-1.5 px-4 py-2 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
                 mode === 'caregiver'
                   ? 'bg-signal text-paper shadow-xs'
                   : 'text-ink-soft hover:text-ink'
@@ -54,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas,
           {/* Atlas Map Link Stub */}
           <button
             onClick={onOpenAtlas}
-            className="p-2 rounded-lg border border-rule bg-paper hover:bg-manila/50 text-ink-soft hover:text-ink transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
+            className="p-2.5 rounded-lg border border-rule bg-paper hover:bg-manila/50 text-ink-soft hover:text-ink transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
             title="Parish Atlas (Coming Soon)"
             aria-label="Open Parish Atlas Placeholder"
           >

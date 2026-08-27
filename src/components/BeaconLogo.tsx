@@ -11,9 +11,9 @@ export const BeaconLogo: React.FC<BeaconLogoProps> = ({
   showWordmark = true,
   className = ''
 }) => {
-  // Height sizing
-  const markHeight = size === 'sm' ? 32 : size === 'md' ? 44 : size === 'lg' ? 72 : 100;
-  const wordmarkSize = size === 'sm' ? 'text-xl' : size === 'md' ? 'text-2xl' : size === 'lg' ? 'text-4xl' : 'text-5xl';
+  // Height sizing — Mark is slightly bigger, text is significantly bigger and bolder
+  const markHeight = size === 'sm' ? 36 : size === 'md' ? 52 : size === 'lg' ? 76 : 104;
+  const wordmarkSize = size === 'sm' ? 'text-2xl sm:text-3xl' : size === 'md' ? 'text-3xl sm:text-4xl' : size === 'lg' ? 'text-4xl sm:text-5xl' : 'text-5xl sm:text-6xl';
 
   return (
     <div className={`inline-flex items-center space-x-3 text-ink ${className}`}>
@@ -76,10 +76,10 @@ export const BeaconLogo: React.FC<BeaconLogoProps> = ({
         />
       </svg>
 
-      {/* Wordmark (Optically aligned on baseline) */}
+      {/* Wordmark (Optically aligned on baseline, bigger & bolder) */}
       {showWordmark && (
         <div className="flex flex-col justify-center">
-          <span className={`font-display font-bold tracking-tight text-ink leading-none ${wordmarkSize}`}>
+          <span className={`font-display font-extrabold tracking-wider text-ink leading-none ${wordmarkSize}`}>
             BEACON
           </span>
         </div>

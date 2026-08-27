@@ -45,18 +45,19 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-ink-soft m-0">
+      <p className="text-xs sm:text-sm text-ink-soft m-0">
         Tap a question to mark it as asked during your appointment:
       </p>
 
-      <ul className="space-y-2.5 p-0 m-0 list-none">
+      {/* 2-Column Responsive Grid on Desktop */}
+      <ul className="grid grid-cols-1 lg:grid-cols-2 gap-3 p-0 m-0 list-none">
         {questions.map((q, idx) => {
           const isChecked = !!checkedIndices[idx];
           return (
             <li
               key={idx}
               onClick={() => toggleCheck(idx)}
-              className={`group flex items-start space-x-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
+              className={`group flex items-start space-x-3 p-4 rounded-xl border transition-all cursor-pointer ${
                 isChecked
                   ? 'bg-paper/50 border-rule opacity-60 line-through'
                   : 'bg-paper border-rule hover:border-manila-deep shadow-xs'
@@ -75,7 +76,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
               </button>
 
               <div className="flex-1 min-w-0">
-                <span className="text-base sm:text-lg text-ink leading-snug block">
+                <span className="text-base text-ink leading-snug block font-medium">
                   {q.text}
                 </span>
               </div>
