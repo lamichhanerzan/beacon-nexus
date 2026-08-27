@@ -19,35 +19,34 @@ export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas,
           className="flex items-center space-x-3 text-left cursor-pointer bg-transparent border-0 p-0 focus:outline-none focus:ring-2 focus:ring-signal rounded-lg"
           title="Return to BEACON Home"
         >
-          {/* Bigger, bolder logo & wordmark */}
           <BeaconLogo size="sm" showWordmark={true} />
         </button>
 
-        <div className="flex items-center space-x-2 sm:space-x-3">
-          {/* Mode Switcher Toggle */}
-          <div className="relative inline-flex bg-paper p-1 rounded-lg border border-rule">
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          {/* Mode Switcher Toggle — 2x LARGER */}
+          <div className="relative inline-flex bg-paper p-1.5 rounded-xl border border-rule shadow-xs">
             <button
               onClick={() => onModeChange('patient')}
-              className={`flex items-center space-x-1.5 px-4 py-2 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-sans text-sm sm:text-base font-bold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
                 mode === 'patient'
-                  ? 'bg-signal text-paper shadow-xs'
-                  : 'text-ink-soft hover:text-ink'
+                  ? 'bg-signal text-paper shadow-md'
+                  : 'text-ink-soft hover:text-ink hover:bg-manila/30'
               }`}
               aria-label="Switch to Patient View"
             >
-              <User className="w-4 h-4" />
+              <User className="w-5 h-5" />
               <span>Patient</span>
             </button>
             <button
               onClick={() => onModeChange('caregiver')}
-              className={`flex items-center space-x-1.5 px-4 py-2 rounded-md font-sans text-xs sm:text-sm font-semibold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-sans text-sm sm:text-base font-bold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
                 mode === 'caregiver'
-                  ? 'bg-signal text-paper shadow-xs'
-                  : 'text-ink-soft hover:text-ink'
+                  ? 'bg-signal text-paper shadow-md'
+                  : 'text-ink-soft hover:text-ink hover:bg-manila/30'
               }`}
               aria-label="Switch to Caregiver View"
             >
-              <HeartHandshake className="w-4 h-4" />
+              <HeartHandshake className="w-5 h-5" />
               <span>Caregiver</span>
             </button>
           </div>
@@ -55,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas,
           {/* Atlas Map Link Stub */}
           <button
             onClick={onOpenAtlas}
-            className="p-2.5 rounded-lg border border-rule bg-paper hover:bg-manila/50 text-ink-soft hover:text-ink transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
+            className="p-3 rounded-xl border border-rule bg-paper hover:bg-manila/50 text-ink-soft hover:text-ink transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
             title="Parish Atlas (Coming Soon)"
             aria-label="Open Parish Atlas Placeholder"
           >

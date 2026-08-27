@@ -38,35 +38,22 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const todayObj = new Date();
   const [currentYear, setCurrentYear] = useState<number>(todayObj.getFullYear());
   const [currentMonth, setCurrentMonth] = useState<number>(todayObj.getMonth());
-
-  // Active popover date string ('YYYY-MM-DD')
   const [popoverDate, setPopoverDate] = useState<string | null>(null);
-
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDayOfWeek = getFirstDayOfWeek(currentYear, currentMonth);
+  const todayStr = formatDateStr(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
 
-  const todayStr = formatDateStr(
-    todayObj.getFullYear(),
-    todayObj.getMonth(),
-    todayObj.getDate()
-  );
-
-  // Close popover on Escape key or click outside
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setPopoverDate(null);
-      }
+      if (e.key === 'Escape') setPopoverDate(null);
     };
-
     const handleClickOutside = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         setPopoverDate(null);
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -76,56 +63,45 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   }, []);
 
   const handlePrevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear((y) => y - 1);
-    } else {
-      setCurrentMonth((m) => m - 1);
-    }
+    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear((y) => y - 1); }
+    else { setCurrentMonth((m) => m - 1); }
     setPopoverDate(null);
   };
 
   const handleNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear((y) => y + 1);
-    } else {
-      setCurrentMonth((m) => m + 1);
-    }
+    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear((y) => y + 1); }
+    else { setCurrentMonth((m) => m + 1); }
     setPopoverDate(null);
   };
 
-  // Map appointments by date string ('YYYY-MM-DD')
   const appointmentsByDate: Record<string, UserAppointment[]> = {};
   appointments.forEach((appt) => {
-    if (!appointmentsByDate[appt.date]) {
-      appointmentsByDate[appt.date] = [];
-    }
+    if (!appointmentsByDate[appt.date]) appointmentsByDate[appt.date] = [];
     appointmentsByDate[appt.date].push(appt);
   });
 
   const popoverAppts = popoverDate ? appointmentsByDate[popoverDate] || [] : [];
 
   return (
-    <div className="bg-paper border-2 border-rule rounded-2xl p-5 shadow-xs space-y-4 relative">
+    <div className="bg-paper border-2 border-rule rounded-2xl shadow-xs relative overflow-hidden">
       
-      {/* Calendar Top Control Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="font-display text-xl font-bold text-ink m-0">
+      {/* Calendar Header with Gradient Accent */}
+      <div className="bg-gradient-to-r from-manila via-manila/80 to-manila-deep/50 px-6 py-5 flex items-center justify-between border-b border-rule">
+        <h3 className="font-display text-2xl font-bold text-ink m-0 tracking-tight">
           {MONTH_NAMES[currentMonth]} {currentYear}
         </h3>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <button
             onClick={handlePrevMonth}
-            className="p-1.5 rounded-lg border border-rule bg-paper hover:bg-manila/50 text-ink transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
+            className="p-2 rounded-lg bg-paper/80 border border-rule hover:bg-paper text-ink transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal shadow-2xs"
             aria-label="Previous month"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={handleNextMonth}
-            className="p-1.5 rounded-lg border border-rule bg-paper hover:bg-manila/50 text-ink transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
+            className="p-2 rounded-lg bg-paper/80 border border-rule hover:bg-paper text-ink transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal shadow-2xs"
             aria-label="Next month"
           >
             <ChevronRight className="w-5 h-5" />
@@ -133,97 +109,93 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       </div>
 
-      {/* Days of Week Header */}
-      <div className="grid grid-cols-7 gap-1 text-center font-clinical text-xs font-bold text-ink-soft uppercase tracking-wider">
-        {DAY_NAMES.map((day) => (
-          <div key={day} className="py-1">
-            {day}
-          </div>
-        ))}
-      </div>
-
-      {/* Month Grid */}
-      <div className="grid grid-cols-7 gap-1 relative">
-        {/* Blank leading offset cells */}
-        {Array.from({ length: firstDayOfWeek }).map((_, idx) => (
-          <div key={`empty_${idx}`} className="h-10 sm:h-12 border border-transparent" />
-        ))}
-
-        {/* Days of the Month */}
-        {Array.from({ length: daysInMonth }).map((_, idx) => {
-          const dayNum = idx + 1;
-          const dateStr = formatDateStr(currentYear, currentMonth, dayNum);
-          const dayAppts = appointmentsByDate[dateStr] || [];
-          const hasAppts = dayAppts.length > 0;
-          const isToday = dateStr === todayStr;
-          const isPast = new Date(dateStr + 'T00:00:00') < new Date(todayStr + 'T00:00:00');
-
-          return (
-            <div
-              key={dateStr}
-              onClick={() => {
-                if (hasAppts) {
-                  setPopoverDate(popoverDate === dateStr ? null : dateStr);
-                } else {
-                  onOpenAddModal(dateStr);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  if (hasAppts) {
-                    setPopoverDate(popoverDate === dateStr ? null : dateStr);
-                  } else {
-                    onOpenAddModal(dateStr);
-                  }
-                }
-              }}
-              tabIndex={0}
-              role="button"
-              aria-label={`${MONTH_NAMES[currentMonth]} ${dayNum}, ${currentYear}${hasAppts ? `, ${dayAppts.length} appointment(s)` : ''}`}
-              className={`h-10 sm:h-12 rounded-xl flex flex-col items-center justify-center relative cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-signal ${
-                isToday ? 'ring-2 ring-manila-deep font-bold' : ''
-              } ${
-                hasAppts
-                  ? isPast
-                    ? 'bg-ink-soft/20 text-ink hover:bg-ink-soft/30'
-                    : 'bg-signal text-paper font-bold shadow-xs hover:bg-signal/90'
-                  : 'bg-paper/40 hover:bg-manila/30 text-ink border border-rule/30'
-              }`}
-            >
-              <span className="font-clinical text-xs sm:text-sm">
-                {dayNum}
-              </span>
-
-              {/* Multiple appointments badge */}
-              {dayAppts.length > 1 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-manila-deep text-ink font-clinical text-[10px] font-bold flex items-center justify-center shadow-xs">
-                  {dayAppts.length}
-                </span>
-              )}
+      <div className="p-5 space-y-3">
+        {/* Days of Week Header */}
+        <div className="grid grid-cols-7 gap-1.5 text-center">
+          {DAY_NAMES.map((day) => (
+            <div key={day} className="py-2 font-clinical text-[11px] font-bold text-ink-soft uppercase tracking-widest">
+              {day}
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Month Grid */}
+        <div className="grid grid-cols-7 gap-1.5 relative">
+          {Array.from({ length: firstDayOfWeek }).map((_, idx) => (
+            <div key={`empty_${idx}`} className="h-12 sm:h-14" />
+          ))}
+
+          {Array.from({ length: daysInMonth }).map((_, idx) => {
+            const dayNum = idx + 1;
+            const dateStr = formatDateStr(currentYear, currentMonth, dayNum);
+            const dayAppts = appointmentsByDate[dateStr] || [];
+            const hasAppts = dayAppts.length > 0;
+            const isToday = dateStr === todayStr;
+            const isPast = new Date(dateStr + 'T00:00:00') < new Date(todayStr + 'T00:00:00');
+
+            return (
+              <div
+                key={dateStr}
+                onClick={() => {
+                  if (hasAppts) setPopoverDate(popoverDate === dateStr ? null : dateStr);
+                  else onOpenAddModal(dateStr);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (hasAppts) setPopoverDate(popoverDate === dateStr ? null : dateStr);
+                    else onOpenAddModal(dateStr);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-label={`${MONTH_NAMES[currentMonth]} ${dayNum}, ${currentYear}${hasAppts ? `, ${dayAppts.length} appointment(s)` : ''}`}
+                className={`h-12 sm:h-14 rounded-xl flex flex-col items-center justify-center relative cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-signal ${
+                  isToday && !hasAppts ? 'ring-2 ring-signal font-bold bg-signal/5' : ''
+                } ${
+                  hasAppts
+                    ? isPast
+                      ? 'bg-ink-soft/15 text-ink hover:bg-ink-soft/25 border border-ink-soft/20'
+                      : 'bg-signal text-paper font-bold shadow-md hover:shadow-lg hover:scale-105 border border-signal'
+                    : isPast
+                    ? 'bg-paper/30 text-ink-soft/60 hover:bg-manila/20 border border-transparent'
+                    : 'bg-paper hover:bg-manila/40 text-ink border border-rule/20 hover:border-rule/60'
+                }`}
+              >
+                <span className={`font-clinical text-sm sm:text-base ${
+                  isToday && !hasAppts ? 'text-signal font-extrabold' : ''
+                }`}>
+                  {dayNum}
+                </span>
+
+                {hasAppts && dayAppts.length > 1 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-manila-deep text-ink font-clinical text-[10px] font-bold flex items-center justify-center shadow-sm border border-paper">
+                    {dayAppts.length}
+                  </span>
+                )}
+
+                {hasAppts && dayAppts.length === 1 && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-paper/70 mt-0.5" />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* POPOVER FOR APPOINTMENTS ON A DAY */}
       {popoverDate && popoverAppts.length > 0 && (
         <div
           ref={popoverRef}
-          className="absolute z-30 left-4 right-4 top-16 bg-paper border-2 border-rule rounded-xl p-4 shadow-xl space-y-3 animate-in zoom-in-95 duration-150"
+          className="absolute z-30 left-4 right-4 top-20 bg-paper border-2 border-rule rounded-xl p-5 shadow-2xl space-y-3 animate-in zoom-in-95 duration-150"
         >
-          <div className="flex items-center justify-between border-b border-rule/60 pb-2">
+          <div className="flex items-center justify-between border-b border-rule/60 pb-3">
             <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider">
               {new Date(popoverDate + 'T00:00:00').toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric'
+                weekday: 'short', month: 'short', day: 'numeric'
               })}
             </span>
-            <button
-              onClick={() => setPopoverDate(null)}
-              className="p-1 rounded text-ink-soft hover:text-ink cursor-pointer"
-            >
+            <button onClick={() => setPopoverDate(null)} className="p-1.5 rounded-lg hover:bg-manila/30 text-ink-soft hover:text-ink cursor-pointer transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -232,29 +204,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             {popoverAppts.map((appt) => {
               const typeObj = APPOINTMENT_TYPES.find((t) => t.id === appt.typeId);
               return (
-                <div
-                  key={appt.id}
-                  className="p-3 rounded-lg bg-manila/30 border border-rule flex items-center justify-between gap-2"
-                >
+                <div key={appt.id} className="p-3.5 rounded-xl bg-manila/30 border border-rule flex items-center justify-between gap-3 hover:bg-manila/50 transition-colors">
                   <div>
-                    <div className="font-sans font-bold text-sm text-ink">
-                      {typeObj?.label || 'Appointment'}
-                    </div>
-                    {appt.time && (
-                      <div className="font-clinical text-xs text-ink-soft">
-                        Time: {appt.time}
-                      </div>
-                    )}
+                    <div className="font-sans font-bold text-sm text-ink">{typeObj?.label || 'Appointment'}</div>
+                    {appt.time && <div className="font-clinical text-xs text-ink-soft mt-0.5">Time: {appt.time}</div>}
                   </div>
-
                   <button
-                    onClick={() => {
-                      setPopoverDate(null);
-                      onSelectAppointment(appt);
-                    }}
-                    className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-md font-sans text-xs font-bold bg-signal text-paper hover:bg-signal/90 transition-colors shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
+                    onClick={() => { setPopoverDate(null); onSelectAppointment(appt); }}
+                    className="inline-flex items-center space-x-1 px-4 py-2 rounded-lg font-sans text-xs font-bold bg-signal text-paper hover:bg-signal/90 transition-colors shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
                   >
-                    <span>More</span>
+                    <span>View</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -264,31 +223,33 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       )}
 
-      {/* EMPTY STATE OR ADD BUTTON */}
-      {appointments.length === 0 ? (
-        <div className="p-4 rounded-xl bg-manila/20 border border-rule text-center space-y-3">
-          <p className="text-sm text-ink-soft m-0 italic">
-            "No appointments yet. Add one and we'll help you prepare for it."
-          </p>
-          <button
-            onClick={() => onOpenAddModal()}
-            className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg font-sans text-sm font-bold bg-signal text-paper hover:bg-signal/90 transition-colors shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Appointment</span>
-          </button>
-        </div>
-      ) : (
-        <div className="pt-2 flex justify-end">
-          <button
-            onClick={() => onOpenAddModal()}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg font-sans text-xs font-bold bg-manila hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
-          >
-            <Plus className="w-4 h-4 text-signal" />
-            <span>Add Appointment</span>
-          </button>
-        </div>
-      )}
+      {/* ADD APPOINTMENT SECTION — Properly Spaced */}
+      <div className="px-6 pb-6 pt-3">
+        {appointments.length === 0 ? (
+          <div className="p-6 rounded-xl bg-gradient-to-br from-manila/30 to-manila/10 border-2 border-dashed border-rule text-center space-y-4">
+            <p className="text-base text-ink-soft m-0 font-medium">
+              No appointments yet. Add one and we'll help you prepare for it.
+            </p>
+            <button
+              onClick={() => onOpenAddModal()}
+              className="inline-flex items-center space-x-2 px-8 py-3.5 rounded-xl font-sans text-base font-bold bg-signal text-paper hover:bg-signal/90 transition-all shadow-md hover:shadow-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Appointment</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={() => onOpenAddModal()}
+              className="inline-flex items-center space-x-2 px-8 py-3 rounded-xl font-sans text-sm font-bold bg-manila hover:bg-manila-deep text-ink transition-all border-2 border-rule hover:border-manila-deep cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal shadow-xs"
+            >
+              <Plus className="w-5 h-5 text-signal" />
+              <span>Add Appointment</span>
+            </button>
+          </div>
+        )}
+      </div>
 
     </div>
   );
