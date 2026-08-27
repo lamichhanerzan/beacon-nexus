@@ -316,7 +316,7 @@ export function App() {
         }}
       />
 
-      <main className="flex-1 w-full max-w-[1700px] mx-auto px-5 sm:px-8 py-4">
+      <main className="flex-1 w-[95vw] max-w-[95vw] mx-auto px-5 sm:px-8 py-4">
         {activeModule === 'landing' ? (
           /* RESTRUCTURED TWO-COLUMN LANDING PAGE (≥1024px) & SINGLE COLUMN (<1024px) */
           <div className="space-y-8 animate-in fade-in duration-300">
@@ -549,7 +549,7 @@ export function App() {
       </main>
 
       {/* Persistent Global Footer Disclaimer */}
-      <footer className="w-full max-w-[1700px] mx-auto px-5 sm:px-8 pb-8">
+      <footer className="w-[95vw] max-w-[95vw] mx-auto px-5 sm:px-8 pb-8">
         <Disclaimer variant="footer" />
         <p className="text-center font-clinical text-xs text-ink-soft mt-4 m-0">
           BEACON Diagnostic Limbo Companion • Built for Nexus Louisiana DevDays

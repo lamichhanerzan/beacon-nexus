@@ -11,7 +11,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ mode, onModeChange, onOpenAtlas, onGoHome }) => {
   return (
-    <header className="w-full max-w-[1700px] mx-auto mb-6 pt-4 px-4 sm:px-8">
+    <header className="w-[95vw] max-w-[95vw] mx-auto mb-6 pt-4 px-2 sm:px-4">
       {/* Folder Tab Top Spine Styling */}
       <div className="bg-manila border-t-2 border-x-2 border-manila-deep rounded-t-xl p-4 sm:p-5 shadow-xs flex items-center justify-between">
         <button

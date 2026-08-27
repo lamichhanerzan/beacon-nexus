@@ -133,7 +133,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-6 py-4 space-y-6 animate-in fade-in duration-300 print:p-0 print:m-0 print:max-w-none print:w-full">
+    <div className="w-[95vw] max-w-[95vw] mx-auto px-2 sm:px-4 py-4 space-y-6 animate-in fade-in duration-300 print:p-0 print:m-0 print:max-w-none print:w-full">
       
       {/* SCREEN BACK NAVIGATION & TOP ACTIONS BAR (Hidden on Print) */}
       <div className="flex items-center justify-between print:hidden border-b border-rule/60 pb-3">
@@ -165,10 +165,11 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* DESKTOP DASHBOARD GRID LAYOUT (SCREEN VIEW) */}
-      {/* 3-Column Layout across full screen: Left Rail (~240px) | Center Content (Flex 1) | Right Rail (~300px) */}
+      {/* FULL-WIDTH DESKTOP DASHBOARD GRID LAYOUT (SCREEN VIEW) */}
+      {/* Spans 95% of viewport width with 2.5% side margins on left and right */}
+      {/* 3-Column Layout: Left Rail (~250px) | Center Content (Flex 1) | Right Rail (~300px) */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6 lg:gap-8 items-start print:hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr_300px] gap-6 lg:gap-8 items-start print:hidden">
         
         {/* ------------------------------------------------------------- */}
         {/* LEFT RAIL COLUMN: APPOINTMENT INFO CARD + INDEX + ACTIONS */}
@@ -280,7 +281,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
         </aside>
 
         {/* ------------------------------------------------------------- */}
-        {/* CENTER COLUMN: MAIN CONTENT AREA (EXPANDS TO FILL WIDESCREEN) */}
+        {/* CENTER COLUMN: MAIN CONTENT AREA (STRETCHES FULLY ON WIDESCREEN) */}
         {/* ------------------------------------------------------------- */}
         <main className="space-y-6 min-w-0">
           
@@ -293,7 +294,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
                 <span className="font-clinical text-[10px] font-bold text-ink-soft uppercase tracking-widest block">
                   What this appointment is
                 </span>
-                <p className="font-sans text-base text-ink leading-relaxed m-0 mt-2 font-medium">
+                <p className="font-sans text-base sm:text-lg text-ink leading-relaxed m-0 mt-2 font-medium">
                   {formatCaregiverText(apptType.whatThisIs, isCaregiver)}
                 </p>
               </div>
@@ -306,7 +307,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
                   <ShieldCheck className="w-4 h-4 text-signal" />
                   <span>What {isCaregiver ? 'they' : 'you'}'ll learn from it</span>
                 </span>
-                <p className="font-sans text-base text-ink leading-relaxed m-0 mt-2 font-medium">
+                <p className="font-sans text-base sm:text-lg text-ink leading-relaxed m-0 mt-2 font-medium">
                   {formatCaregiverText(apptType.whatItTellsYou, isCaregiver)}
                 </p>
               </div>
@@ -322,7 +323,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               {apptType.whatHappens.map((step, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-manila/20 border border-rule/70 space-y-2 flex flex-col justify-start">
+                <div key={idx} className="p-4.5 rounded-xl bg-manila/20 border border-rule/70 space-y-2 flex flex-col justify-start">
                   <span className="font-clinical text-xs font-bold text-signal">
                     0{idx + 1}
                   </span>
@@ -334,7 +335,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
             </div>
           </div>
 
-          {/* QUESTIONS TO ASK PANEL (GENEROUS 2-COLUMN GRID WITH SPACE TO BREATHE) */}
+          {/* QUESTIONS TO ASK PANEL (GENEROUS 2-COLUMN GRID WITH WIDE BREATHING ROOM) */}
           <div id="sec-questions" className="bg-paper border border-rule rounded-2xl p-6 shadow-2xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rule/60 pb-3">
               <div>
