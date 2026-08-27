@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { STAGES } from './content/stages';
 import type { ScreeningInput } from './lib/screening';
 import { evaluateScreenings } from './lib/screening';
@@ -12,7 +12,19 @@ import { AtlasModal } from './components/AtlasModal';
 import { JourneyTimelineModal } from './components/JourneyTimelineModal';
 import { ArrowRight, ShieldCheck, Search, Activity, Home } from 'lucide-react';
 
+// Desktop handoff shell components
+import { DesktopHeader, type DesktopScreen } from './components/desktop/DesktopHeader';
+import { LandingHero } from './components/desktop/LandingHero';
+import { Onboarding } from './components/desktop/Onboarding';
+import { StageDetail } from './components/desktop/StageDetail';
+import { QuestionsPanel } from './components/desktop/QuestionsPanel';
+import { CaregiverPanel } from './components/desktop/CaregiverPanel';
+
+type Marks = Record<string, Record<number, boolean>>;
+
 export function App() {
+  const isDesktopShell = new URLSearchParams(window.location.search).has('desktop');
+
   const [activeModule, setActiveModule] = useState<'landing' | 'screening' | 'spine'>('landing');
   const [mode, setMode] = useState<'patient' | 'caregiver'>('patient');
 
@@ -26,6 +38,14 @@ export function App() {
   const [screeningInput, setScreeningInput] = useState<ScreeningInput | null>(null);
   const [screeningStep, setScreeningStep] = useState<'form' | 'results'>('form');
 
+  // Desktop Shell specific state
+  const [desktopScreen, setDesktopScreen] = useState<DesktopScreen>('landing');
+  const [checked, setChecked] = useState<Marks>({});
+  const [done, setDone] = useState<Marks>({});
+  const [custom, setCustom] = useState<Record<string, string[]>>({});
+  const [nav, setNav] = useState<'rail' | 'stepper'>('rail');
+  const [timelineView, setTimelineView] = useState<'bar' | 'dots'>('bar');
+
   // Modals
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isAtlasModalOpen, setIsAtlasModalOpen] = useState<boolean>(false);
@@ -35,6 +55,14 @@ export function App() {
   useEffect(() => {
     const pathname = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
+
+    if (searchParams.has('desktop')) {
+      const s = searchParams.get('s');
+      if (s && STAGES.some((st) => st.id === s)) {
+        setStageId(s);
+        setDesktopScreen('stage');
+      }
+    }
 
     // 1. Check Screening route / params
     if (pathname.includes('/screening') || searchParams.has('a')) {
@@ -126,6 +154,120 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Helper function for toggling check marks in Desktop shell
+  const toggleMarks = (
+    setter: React.Dispatch<React.SetStateAction<Marks>>,
+    index: number
+  ) =>
+    setter((prev) => ({
+      ...prev,
+      [stageId]: { ...(prev[stageId] ?? {}), [index]: !(prev[stageId] ?? {})[index] }
+    }));
+
+  const changeDesktopMode = (m: 'patient' | 'caregiver') => {
+    setMode(m);
+    if (desktopScreen === 'landing') return;
+    setDesktopScreen(m === 'caregiver' ? 'caregiver' : 'stage');
+  };
+
+  const currentStage = STAGES.find((s) => s.id === stageId) ?? STAGES[0];
+  const questionCount = currentStage.questions.length + (custom[stageId]?.length ?? 0);
+
+  // If ?desktop flag is present in URL, render desktop handoff shell
+  if (isDesktopShell) {
+    return (
+      <div className="min-h-screen bg-paper text-ink flex flex-col font-sans selection:bg-signal-light selection:text-signal">
+        <DesktopHeader
+          screen={desktopScreen}
+          onScreenChange={setDesktopScreen}
+          mode={mode}
+          onModeChange={changeDesktopMode}
+          started={desktopScreen !== 'landing'}
+        />
+
+        {desktopScreen === 'landing' && (
+          <LandingHero
+            onStart={(m) => {
+              setMode(m);
+              setDesktopScreen('onboard');
+            }}
+          />
+        )}
+
+        {desktopScreen === 'onboard' && (
+          <Onboarding
+            stageId={stageId}
+            onSelectStage={handleSelectStage}
+            date={dateEntered}
+            onDateChange={(d) => {
+              setDateEntered(d);
+              handleStageDateChange(stageId, d);
+            }}
+            onContinue={() => setDesktopScreen('stage')}
+          />
+        )}
+
+        {desktopScreen === 'stage' && (
+          <StageDetail
+            stage={currentStage}
+            stages={STAGES}
+            dateEntered={dateEntered}
+            onSelectStage={handleSelectStage}
+            nav={nav}
+            onToggleNav={() => setNav(nav === 'rail' ? 'stepper' : 'rail')}
+            timelineView={timelineView}
+            onToggleTimelineView={() => setTimelineView(timelineView === 'bar' ? 'dots' : 'bar')}
+            onOpenQuestions={() => setDesktopScreen('questions')}
+            onOpenCaregiver={() => {
+              setMode('caregiver');
+              setDesktopScreen('caregiver');
+            }}
+            questionCount={questionCount}
+          />
+        )}
+
+        {desktopScreen === 'questions' && (
+          <QuestionsPanel
+            stage={currentStage}
+            checked={checked[stageId] ?? {}}
+            onToggle={(i) => toggleMarks(setChecked, i)}
+            custom={custom[stageId] ?? []}
+            onAddCustom={(t) =>
+              setCustom((prev) => ({ ...prev, [stageId]: [...(prev[stageId] ?? []), t] }))
+            }
+            onClear={() => setChecked((prev) => ({ ...prev, [stageId]: {} }))}
+            onBack={() => setDesktopScreen('stage')}
+          />
+        )}
+
+        {desktopScreen === 'caregiver' && (
+          <CaregiverPanel
+            stage={currentStage}
+            done={done[stageId] ?? {}}
+            onToggle={(i) => toggleMarks(setDone, i)}
+            onBack={() => {
+              setMode('patient');
+              setDesktopScreen('stage');
+            }}
+          />
+        )}
+
+        <footer className="mt-auto border-t border-rule bg-paper">
+          <div className="max-w-6xl mx-auto px-8 py-6 flex items-center gap-5">
+            <p className="text-[13px] text-ink-soft leading-relaxed max-w-[80ch] m-0">
+              BEACON explains typical processes and timeframes. It is not medical advice and cannot
+              interpret your results. Call your care team with anything urgent.
+            </p>
+            <span className="ml-auto font-clinical text-[11px] text-ink-soft whitespace-nowrap">
+              Built for Nexus Louisiana DevDays
+            </span>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  // Standard BEACON App View
   return (
     <div className="min-h-screen bg-paper text-ink flex flex-col font-sans selection:bg-signal-light selection:text-signal">
       {/* Top Header tab bar */}
