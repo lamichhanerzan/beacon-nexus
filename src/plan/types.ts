@@ -64,6 +64,7 @@ export interface PlanProfile {
   isHDHP: Band<'yes' | 'no'>;
   deductibleRemaining: Band<'met' | 'under1k' | '1k_3k' | '3k_6k' | 'over6k'>;
   oopSpentBand: Band<'under500' | '500_2k' | '2k_5k' | 'over5k'>;
+  facilityType: Band<'academic' | 'community' | 'ambulatory' | 'unsure'>;
   networkChecked: Band<'yes' | 'no'>;
   drugRoute: string[];
   billsInCollections: Band<'yes' | 'no'>;
@@ -184,6 +185,7 @@ export const INITIAL_PROFILE: PlanProfile = {
   isHDHP: null,
   deductibleRemaining: null,
   oopSpentBand: null,
+  facilityType: null,
   networkChecked: null,
   drugRoute: [],
   billsInCollections: null,

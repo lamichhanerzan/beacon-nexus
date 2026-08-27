@@ -11,10 +11,14 @@ export const DiagnosisSection: React.FC = () => {
   const { profile, setField } = usePlanStore();
   const { answered, total } = getSectionCompletion(profile, 'diagnosis');
 
+  const detail = (profile.detailLevel && profile.detailLevel !== 'unsure')
+    ? profile.detailLevel
+    : 'balanced';
+
   const explanation = getDiagnosisExplanation(
     profile.cancerType,
     profile.stage,
-    profile.detailLevel || 'balanced'
+    detail
   );
 
   return (

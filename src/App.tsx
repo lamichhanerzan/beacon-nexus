@@ -17,7 +17,8 @@ import { AppointmentPrepSheet } from './components/AppointmentPrepSheet';
 import { AssistantBubble } from './components/AssistantBubble';
 import { AssistantWindow } from './components/AssistantWindow';
 import { APPOINTMENT_TYPES } from './content/appointments';
-import { ArrowRight, Search, Activity, Calendar as CalendarIcon } from 'lucide-react';
+import { ArrowRight, Search, Activity, Calendar as CalendarIcon, ClipboardList } from 'lucide-react';
+import { PlanModule } from './plan/PlanModule';
 
 // Desktop handoff shell components
 import { DesktopHeader, type DesktopScreen } from './components/desktop/DesktopHeader';
@@ -32,7 +33,7 @@ type Marks = Record<string, Record<number, boolean>>;
 export function App() {
   const isDesktopShell = new URLSearchParams(window.location.search).has('desktop');
 
-  const [activeModule, setActiveModule] = useState<'landing' | 'screening' | 'spine' | 'appointments'>('landing');
+  const [activeModule, setActiveModule] = useState<'landing' | 'screening' | 'spine' | 'appointments' | 'plan'>('landing');
   const [mode, setMode] = useState<'patient' | 'caregiver'>('patient');
 
   // Spine state
@@ -400,6 +401,31 @@ export function App() {
                     </div>
                   </div>
 
+                  {/* CARD C — "My Plan" (desaturated accent background, premium paperwork style) */}
+                  <div
+                    onClick={() => setActiveModule('plan')}
+                    className="bg-[#2F5D50]/5 border-2 border-[#2F5D50]/20 rounded-2xl p-6 sm:p-8 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group hover:border-[#2F5D50]"
+                  >
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-full bg-[#2F5D50]/10 text-[#2F5D50] inline-block border border-[#2F5D50]/20">
+                        <ClipboardList className="w-6 h-6" />
+                      </div>
+
+                      <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink group-hover:text-[#2F5D50] transition-colors m-0">
+                        My Plan
+                      </h2>
+
+                      <p className="text-base text-ink-soft leading-relaxed m-0 italic">
+                        "A personalized guide to navigate stage, cost, appointments, and daily life."
+                      </p>
+                    </div>
+
+                    <div className="pt-6 flex items-center text-[#2F5D50] font-sans font-bold text-base group-hover:translate-x-1 transition-transform">
+                      <span>Create/Open My Plan</span>
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </div>
+                  </div>
+
                 </div>
 
                 {/* QUIET ROW OF THREE FACTS */}
@@ -538,6 +564,11 @@ export function App() {
                 onEditInputs={() => setScreeningStep('form')}
               />
             )}
+          </div>
+        ) : activeModule === 'plan' ? (
+          /* MY PLAN MODULE */
+          <div className="animate-in fade-in duration-300">
+            <PlanModule />
           </div>
         ) : (
           /* DIAGNOSTIC JOURNEY MODULE */

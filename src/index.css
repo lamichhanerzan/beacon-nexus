@@ -12,6 +12,9 @@
   --color-signal-light: #E6F0EC;
   --color-flag: #8C2F1E;
   --color-flag-bg: #FDF4F2;
+  --color-accent: #2F5D50;
+  --color-caution: #A66A21;
+  --color-surface: #FFFFFF;
   
   --font-serif: 'Fraunces', Georgia, serif;
   --font-sans: 'Public Sans', system-ui, -apple-system, sans-serif;
@@ -27,6 +30,9 @@
   --rule: #C9BFA9;
   --signal: #1F5C4D;
   --flag: #8C2F1E;
+  --accent: #2F5D50;
+  --caution: #A66A21;
+  --surface: #FFFFFF;
   
   font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
   color-scheme: light;

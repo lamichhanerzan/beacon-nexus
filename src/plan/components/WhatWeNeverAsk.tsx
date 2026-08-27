@@ -1,6 +1,5 @@
 import React from 'react';
 import { Shield } from 'lucide-react';
-import { BLOCKED_FIELDS } from '../types';
 
 const PLAIN_LANGUAGE_EXCLUSIONS = [
   { field: 'Your name', why: 'We never need to identify you.' },

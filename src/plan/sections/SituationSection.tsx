@@ -4,7 +4,6 @@ import { getSectionCompletion } from '../store';
 import { SectionHeader } from '../components/SectionHeader';
 import { BandSelect } from '../components/BandSelect';
 import { ChipMulti } from '../components/ChipMulti';
-import { OptionCard } from '../components/OptionCard';
 import { GatedQuestion } from '../components/GatedQuestion';
 import { SearchableCombobox } from '../components/SearchableCombobox';
 import { GuidanceCard } from '../components/GuidanceCard';

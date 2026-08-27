@@ -9,6 +9,7 @@ import { AppointmentsSection } from './sections/AppointmentsSection';
 import { LifeSection } from './sections/LifeSection';
 import { ResourcesSection } from './sections/ResourcesSection';
 import { WhatWeNeverAsk } from './components/WhatWeNeverAsk';
+import { DEMO_UNINSURED, DEMO_UNCAPPED_MEDICARE } from './content/demoProfiles';
 import {
   ClipboardList, DollarSign, BookOpen, Calendar, Briefcase,
   FolderOpen, Shield, Trash2, Menu, X, ChevronRight,
@@ -36,12 +37,8 @@ function renderSection(id: PlanSectionId): React.ReactNode {
   }
 }
 
-interface PlanModuleProps {
-  onBack: () => void;
-}
-
-export const PlanModule: React.FC<PlanModuleProps> = ({ onBack }) => {
-  const { profile, activeSection, setActiveSection, clearAll } = usePlanStore();
+export const PlanModule: React.FC = () => {
+  const { profile, activeSection, setActiveSection, clearAll, setFields } = usePlanStore();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
@@ -158,6 +155,25 @@ export const PlanModule: React.FC<PlanModuleProps> = ({ onBack }) => {
           <Shield className="w-4 h-4" />
           <span>What we never ask you</span>
         </button>
+
+        {/* Demo profiles (only in DEV mode) */}
+        {import.meta.env.DEV && (
+          <div className="pt-4 border-t border-[#E4E1DA] space-y-2 mt-4">
+            <span className="text-[10px] font-mono text-[#5A5751]/60 uppercase tracking-widest block font-bold">Demo Profiles</span>
+            <button
+              onClick={() => setFields(DEMO_UNINSURED)}
+              className="w-full text-left px-3 py-1.5 rounded-lg font-sans text-xs font-semibold text-[#2F5D50] bg-[#2F5D50]/5 hover:bg-[#2F5D50]/15 cursor-pointer border-0"
+            >
+              Load Uninsured Demo
+            </button>
+            <button
+              onClick={() => setFields(DEMO_UNCAPPED_MEDICARE)}
+              className="w-full text-left px-3 py-1.5 rounded-lg font-sans text-xs font-semibold text-[#2F5D50] bg-[#2F5D50]/5 hover:bg-[#2F5D50]/15 cursor-pointer border-0"
+            >
+              Load Uncapped Medicare Demo
+            </button>
+          </div>
+        )}
 
         {/* Clear */}
         <div className="pt-4 mt-auto border-t border-[#E4E1DA]">
