@@ -37,49 +37,6 @@ interface ChatMessage {
   };
 }
 
-const GLOSSARY_TERMS: Record<string, { summary: string; questions: string[] }> = {
-  biopsy: {
-    summary: 'A biopsy is a procedure where a physician removes a small sample of tissue or cells so a pathologist can examine them under a microscope to determine whether cells are benign or malignant.',
-    questions: [
-      'How many working days will it take for pathology to finish testing?',
-      'Which specific lab is processing my tissue sample?',
-      'What symptoms or warning signs should prompt an urgent call back?'
-    ]
-  },
-  pathology: {
-    summary: 'Pathology is the medical branch focused on analyzing tissue, blood, and cell samples under a microscope to determine cell types, grade, and molecular characteristics.',
-    questions: [
-      'Can I receive a printed copy of the complete pathology report?',
-      'Are additional biomarker stains or genomic tests being run on this sample?',
-      'Is my pathology report scheduled for review by a Tumor Board?'
-    ]
-  },
-  margin: {
-    summary: 'Surgical margins describe the rim of tissue surrounding a removed tumor. Clear or negative margins mean no abnormal cells were detected at the outer edge.',
-    questions: [
-      'Were the surgical margins clear, close, or involved?',
-      'Does the margin status mean further surgery or radiation is recommended?',
-      'When will the final pathology report on margins be ready?'
-    ]
-  },
-  birads: {
-    summary: 'BI-RADS is a standardized 0-to-6 scoring system used by radiologists to communicate mammogram and ultrasound findings clearly across clinics.',
-    questions: [
-      'What specific BI-RADS category was assigned to my scan?',
-      'Does this score indicate a need for additional diagnostic imaging or biopsy?',
-      'When should my next routine or diagnostic mammogram be scheduled?'
-    ]
-  },
-  staging: {
-    summary: 'Staging describes the extent and spread of a cancer, using a standardized system (usually TNM) that measures tumor size, lymph node involvement, and whether it has spread to other organs.',
-    questions: [
-      'What stage was assigned, and what does each letter-number mean?',
-      'Are there any additional staging tests still pending?',
-      'How does the staging result affect which treatments are offered?'
-    ]
-  }
-};
-
 export const AssistantWindow: React.FC<AssistantWindowProps> = ({
   isOpen,
   onClose,
@@ -265,13 +222,34 @@ export const AssistantWindow: React.FC<AssistantWindowProps> = ({
     }
 
     setIsLoading(true);
-    let matchedData = GLOSSARY_TERMS['biopsy'];
-    Object.keys(GLOSSARY_TERMS).forEach((term) => { if (lowerQuery.includes(term)) matchedData = GLOSSARY_TERMS[term]; });
+    try {
+      const history = [...messages, userMsg]
+        .filter((m): m is ChatMessage & { text: string } => typeof m.text === 'string' && m.text.length > 0)
+        .map((m) => ({ role: (m.sender === 'user' ? 'user' : 'assistant') as 'user' | 'assistant', content: m.text }));
 
-    setTimeout(() => {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, webSearch: true }),
+      });
+
+      if (!res.ok) throw new Error(`chat request failed: ${res.status}`);
+      const data: { text?: string } = await res.json();
+
+      setMessages((prev) => [...prev, {
+        id: `b_${Date.now()}`,
+        sender: 'assistant',
+        text: data.text || "I don't have an answer for that right now — try rephrasing, or ask me to book an appointment or check screening eligibility.",
+      }]);
+    } catch {
+      setMessages((prev) => [...prev, {
+        id: `b_${Date.now()}`,
+        sender: 'assistant',
+        text: "I couldn't reach Claude just now. You can try again in a moment, or ask me to book an appointment or check screening eligibility instead.",
+      }]);
+    } finally {
       setIsLoading(false);
-      setMessages((prev) => [...prev, { id: `b_${Date.now()}`, sender: 'assistant', type: 'explanation', explanationData: { summary: matchedData.summary, questions: matchedData.questions, isGenerated: true } }]);
-    }, 600);
+    }
   };
 
   const sizeClasses =
