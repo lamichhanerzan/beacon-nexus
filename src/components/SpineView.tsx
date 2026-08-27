@@ -3,6 +3,8 @@ import { STAGES } from '../content/stages';
 import { PARISHES } from '../content/resources';
 import { computeDwell } from '../lib/dwell';
 import { formatCaregiverText } from '../lib/caregiverGrammar';
+import { JourneyForecastPanel } from './JourneyForecastPanel';
+import { MomentumCheckCard } from './MomentumCheckCard';
 import { CallScriptCard } from './CallScriptCard';
 import { QuestionsList } from './QuestionsList';
 import { RedFlagPanel } from './RedFlagPanel';
@@ -23,6 +25,7 @@ interface SpineViewProps {
   mode: 'patient' | 'caregiver';
   onOpenShareModal: () => void;
   onOpenTimelineModal: () => void;
+  upcomingAppointments?: Array<{ date: string; typeId: string }>;
 }
 
 export const SpineView: React.FC<SpineViewProps> = ({
@@ -36,7 +39,8 @@ export const SpineView: React.FC<SpineViewProps> = ({
   onParishChange,
   mode,
   onOpenShareModal,
-  onOpenTimelineModal
+  onOpenTimelineModal,
+  upcomingAppointments = []
 }) => {
   const [isVisitSummaryOpen, setIsVisitSummaryOpen] = useState(false);
   const [tappedQuestions, setTappedQuestions] = useState<Record<number, boolean>>({});
@@ -78,10 +82,8 @@ export const SpineView: React.FC<SpineViewProps> = ({
 
   const handleStageClick = (stageId: string) => {
     if (stageId === currentStageId) {
-      // Toggle collapse/expand by passing empty string or re-selecting
       onSelectStage(stageId);
     } else {
-      // Expanding a new stage automatically collapses the previous one
       onSelectStage(stageId);
     }
   };
@@ -227,16 +229,17 @@ export const SpineView: React.FC<SpineViewProps> = ({
                         <ChevronDown className={`w-5 h-5 text-ink-soft transition-transform duration-200 ease-out ${isCurrent ? 'rotate-180 text-signal' : ''}`} />
                       </button>
 
-                      {/* Mobile Collapsible Panel with 200ms ease-out animation */}
+                      {/* Mobile Collapsible Panel */}
                       <div
                         className={`transition-all duration-200 ease-out overflow-hidden ${
-                          isCurrent ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'
+                          isCurrent ? 'max-h-[3500px] opacity-100' : 'max-h-0 opacity-0'
                         }`}
                       >
                         {isCurrent && (
                           <div className="px-4 pb-6 sm:px-6 sm:pb-8 border-t border-rule/60 pt-4 space-y-6">
                             <FullStageContent
                               stage={activeStage}
+                              stageDates={stageDates}
                               dateEntered={dateEntered}
                               onDateInputChange={handleDateInputChange}
                               parishSlug={parishSlug}
@@ -248,6 +251,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
                               onOpenShareModal={onOpenShareModal}
                               onOpenTimelineModal={onOpenTimelineModal}
                               setIsVisitSummaryOpen={setIsVisitSummaryOpen}
+                              upcomingAppointments={upcomingAppointments}
                             />
                           </div>
                         )}
@@ -263,6 +267,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
           <div className={`hidden lg:block transition-opacity duration-200 ${isFading ? 'opacity-0' : 'opacity-100'}`}>
             <FullStageContent
               stage={activeStage}
+              stageDates={stageDates}
               dateEntered={dateEntered}
               onDateInputChange={handleDateInputChange}
               parishSlug={parishSlug}
@@ -274,6 +279,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
               onOpenShareModal={onOpenShareModal}
               onOpenTimelineModal={onOpenTimelineModal}
               setIsVisitSummaryOpen={setIsVisitSummaryOpen}
+              upcomingAppointments={upcomingAppointments}
             />
           </div>
 
@@ -295,9 +301,10 @@ export const SpineView: React.FC<SpineViewProps> = ({
   );
 };
 
-/* REUSABLE FULL STAGE CONTENT COMPONENT WITH CAREGIVER GRAMMAR FIXES */
+/* REUSABLE FULL STAGE CONTENT COMPONENT WITH JOURNEY FORECAST & MOMENTUM CHECK */
 interface FullStageContentProps {
   stage: typeof STAGES[0];
+  stageDates: Record<string, string>;
   dateEntered: string;
   onDateInputChange: (date: string) => void;
   parishSlug: string;
@@ -309,10 +316,12 @@ interface FullStageContentProps {
   onOpenShareModal: () => void;
   onOpenTimelineModal: () => void;
   setIsVisitSummaryOpen: (open: boolean) => void;
+  upcomingAppointments: Array<{ date: string; typeId: string }>;
 }
 
 const FullStageContent: React.FC<FullStageContentProps> = ({
   stage,
+  stageDates,
   dateEntered,
   onDateInputChange,
   parishSlug,
@@ -323,7 +332,8 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
   handleToggleQuestion,
   onOpenShareModal,
   onOpenTimelineModal,
-  setIsVisitSummaryOpen
+  setIsVisitSummaryOpen,
+  upcomingAppointments
 }) => {
   const isCaregiver = mode === 'caregiver';
 
@@ -383,6 +393,24 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
           </select>
         </div>
       </div>
+
+      {/* MOMENTUM CHECK CARD */}
+      <MomentumCheckCard
+        currentStageId={stage.id}
+        daysAtCurrentStage={dwell.daysElapsed}
+        upcomingAppointments={upcomingAppointments}
+        callScript={stage.callScript || undefined}
+        dateEntered={dateEntered}
+        mode={mode}
+      />
+
+      {/* JOURNEY FORECAST PROJECTION PANEL */}
+      <JourneyForecastPanel
+        stageDates={stageDates}
+        currentStageId={stage.id}
+        dateEntered={dateEntered}
+        mode={mode}
+      />
 
       {/* SECTION 1: Day Counter Band & Status Verdict */}
       <div className="p-5 rounded-xl border border-rule bg-paper shadow-xs flex flex-col sm:flex-row sm:items-start justify-between gap-4">

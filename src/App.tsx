@@ -14,6 +14,8 @@ import { BeaconLogo } from './components/BeaconLogo';
 import { CalendarView } from './components/CalendarView';
 import { AppointmentForm, type UserAppointment } from './components/AppointmentForm';
 import { AppointmentPrepSheet } from './components/AppointmentPrepSheet';
+import { AssistantBubble } from './components/AssistantBubble';
+import { AssistantWindow } from './components/AssistantWindow';
 import { APPOINTMENT_TYPES } from './content/appointments';
 import { ArrowRight, Search, Activity, Calendar as CalendarIcon } from 'lucide-react';
 
@@ -48,6 +50,9 @@ export function App() {
   const [selectedAppointment, setSelectedAppointment] = useState<UserAppointment | null>(null);
   const [isApptFormOpen, setIsApptFormOpen] = useState<boolean>(false);
   const [apptFormInitialDate, setApptFormInitialDate] = useState<string | undefined>(undefined);
+
+  // Assistant state
+  const [isAssistantOpen, setIsAssistantOpen] = useState<boolean>(false);
 
   // Desktop Shell specific state
   const [desktopScreen, setDesktopScreen] = useState<DesktopScreen>('landing');
@@ -494,6 +499,10 @@ export function App() {
                   setActiveModule('landing');
                   setSelectedAppointment(null);
                 }}
+                onOpenStage={(targetStageId) => {
+                  setStageId(targetStageId);
+                  setActiveModule('spine');
+                }}
               />
             ) : (
               <div className="text-center py-12 space-y-4">
@@ -543,6 +552,7 @@ export function App() {
               mode={mode}
               onOpenShareModal={() => setIsShareModalOpen(true)}
               onOpenTimelineModal={() => setIsTimelineModalOpen(true)}
+              upcomingAppointments={upcomingAppointments}
             />
           </div>
         )}
@@ -555,6 +565,32 @@ export function App() {
           BEACON Diagnostic Limbo Companion • Built for Nexus Louisiana DevDays
         </p>
       </footer>
+
+      {/* BEACON ASSISTANT FLOATING BUBBLE AND INTERACTIVE CHAT WINDOW */}
+      <AssistantBubble
+        isOpen={isAssistantOpen}
+        onClick={() => setIsAssistantOpen(true)}
+      />
+
+      <AssistantWindow
+        isOpen={isAssistantOpen}
+        onClose={() => setIsAssistantOpen(false)}
+        mode={mode}
+        onAddAppointment={handleAddAppointment}
+        onOpenPrepSheet={(appt) => {
+          setSelectedAppointment(appt);
+          setActiveModule('appointments');
+        }}
+        onNavigate={(route) => {
+          if (route === 'screening') {
+            setActiveModule('screening');
+          } else if (route === 'journey') {
+            setActiveModule('spine');
+          } else if (route === 'facilities') {
+            setActiveModule('screening');
+          }
+        }}
+      />
 
       {/* Appointment Form Modal */}
       <AppointmentForm
