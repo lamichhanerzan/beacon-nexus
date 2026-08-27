@@ -3,6 +3,7 @@ import type { UserAppointment } from './AppointmentForm';
 import { APPOINTMENT_TYPES } from '../content/appointments';
 import { formatCaregiverText } from '../lib/caregiverGrammar';
 import { STAGES } from '../content/stages';
+import { BackButton } from './BackButton';
 import {
   Calendar,
   Clock,
@@ -14,9 +15,8 @@ import {
   ChevronUp,
   CheckSquare,
   Square,
-  ArrowLeft,
-  HelpCircle,
   ShieldCheck,
+  HelpCircle,
   ArrowRight,
   AlertCircle
 } from 'lucide-react';
@@ -133,17 +133,11 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
   };
 
   return (
-    <div className="w-[95vw] max-w-[95vw] mx-auto px-2 sm:px-4 py-4 space-y-6 animate-in fade-in duration-300 print:p-0 print:m-0 print:max-w-none print:w-full">
+    <div className="w-full py-4 space-y-6 animate-in fade-in duration-300 print:p-0 print:m-0 print:max-w-none print:w-full">
       
       {/* SCREEN BACK NAVIGATION & TOP ACTIONS BAR (Hidden on Print) */}
       <div className="flex items-center justify-between print:hidden border-b border-rule/60 pb-3">
-        <button
-          onClick={onBack}
-          className="inline-flex items-center space-x-1.5 font-clinical text-xs font-semibold text-signal hover:underline cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Calendar & Appointments</span>
-        </button>
+        <BackButton onClick={onBack} label="Go Back" />
 
         <div className="flex items-center space-x-3">
           <button
@@ -177,7 +171,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
         <aside className="space-y-5 lg:sticky lg:top-4">
           
           {/* APPOINTMENT HEADER CARD */}
-          <div className="bg-manila border-2 border-manila-deep rounded-2xl p-5 shadow-xs space-y-3">
+          <div className="bg-paper border border-rule rounded-2xl p-5 shadow-xs space-y-3">
             <span className="font-clinical text-[10px] font-bold text-ink-soft uppercase tracking-widest block">
               Appointment Prep Guide
             </span>
@@ -440,7 +434,7 @@ export const AppointmentPrepSheet: React.FC<AppointmentPrepSheetProps> = ({
         <aside className="space-y-5 lg:sticky lg:top-4">
           
           {/* BRING WITH YOU CARD */}
-          <div className="bg-manila/40 border border-rule rounded-2xl p-5 shadow-2xs space-y-3">
+          <div className="bg-manila/30 border border-rule rounded-2xl p-5 shadow-2xs space-y-3">
             <div className="flex items-center justify-between border-b border-rule/60 pb-2">
               <span className="font-clinical text-[10px] font-bold text-ink uppercase tracking-widest">
                 Bring with {isCaregiver ? 'them' : 'you'}

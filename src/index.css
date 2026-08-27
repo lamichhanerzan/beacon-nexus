@@ -75,6 +75,14 @@ button, input, select, a {
   min-height: 48px;
 }
 
+button.window-control {
+  min-height: 0;
+  min-width: 0;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+}
+
 /* Pulse animation for active signal node */
 @keyframes signal-pulse {
   0%, 100% {

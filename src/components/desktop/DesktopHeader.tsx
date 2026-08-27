@@ -20,8 +20,8 @@ const TABS: { label: string; key: DesktopScreen }[] = [
 export const DesktopHeader: React.FC<Props> = ({
   screen, onScreenChange, mode, onModeChange, started,
 }) => (
-  <div className="sticky top-0 z-20 bg-manila border-b-2 border-manila-deep">
-    <div className="max-w-6xl mx-auto px-8 py-3.5 flex items-center justify-between gap-6">
+  <div className="sticky top-0 z-20 bg-paper border-b border-rule">
+    <div className="w-full px-8 py-3.5 flex items-center justify-between gap-6">
       <button
         onClick={() => onScreenChange('landing')}
         className="flex items-center gap-3 bg-transparent border-0 p-0 cursor-pointer text-left"

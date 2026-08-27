@@ -89,7 +89,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
   };
 
   return (
-    <div className="w-[95vw] max-w-[95vw] mx-auto px-3 sm:px-4 pb-16">
+    <div className="w-full pb-16">
       
       {/* DESKTOP 2-PANEL LAYOUT (>= 1024px) & MOBILE STACKED ACCORDION (< 1024px) */}
       <div className="lg:flex lg:items-start lg:gap-8">

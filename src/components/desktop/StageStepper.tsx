@@ -13,7 +13,7 @@ export const StageStepper: React.FC<Props> = ({
 }) => {
   const current = stages.find((s) => s.id === currentStageId);
   return (
-    <div className="bg-manila border-2 border-manila-deep rounded-2xl px-5 py-4.5 mb-6">
+    <div className="bg-paper border border-rule rounded-2xl px-5 py-4.5 mb-6">
       <div className="flex items-center justify-between">
         <span className="font-clinical text-[10px] uppercase tracking-[0.12em] text-ink-soft font-bold">
           Your file

@@ -85,8 +85,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   return (
     <div className="bg-paper border-2 border-rule rounded-2xl shadow-xs relative overflow-hidden">
       
-      {/* Calendar Header with Gradient Accent */}
-      <div className="bg-gradient-to-r from-manila via-manila/80 to-manila-deep/50 px-6 py-5 flex items-center justify-between border-b border-rule">
+      <div className="bg-paper px-6 py-5 flex items-center justify-between border-b border-rule">
         <h3 className="font-display text-2xl font-bold text-ink m-0 tracking-tight">
           {MONTH_NAMES[currentMonth]} {currentYear}
         </h3>

@@ -14,7 +14,7 @@ export const StageRail: React.FC<Props> = ({
 }) => {
   const current = stages.find((s) => s.id === currentStageId);
   return (
-    <div className="sticky top-[104px] bg-manila border-2 border-manila-deep rounded-2xl p-2">
+    <div className="sticky top-[104px] bg-paper border border-rule rounded-2xl p-2">
       <div className="font-clinical text-[10px] uppercase tracking-[0.12em] text-ink-soft font-bold px-3 pt-2.5 pb-3">
         Your file
       </div>

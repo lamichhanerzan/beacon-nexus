@@ -59,7 +59,7 @@ export const LandingHero: React.FC<Props> = ({ onStart }) => (
         </div>
       </div>
 
-      <div className="bg-manila border-2 border-manila-deep rounded-2xl p-2 pb-5">
+      <div className="bg-paper border border-rule rounded-2xl p-2 pb-5">
         <div className="bg-paper border border-rule rounded-xl p-5.5">
           <div className="font-clinical text-[10px] uppercase tracking-[0.12em] text-ink-soft font-bold">
             The nine stages of the wait

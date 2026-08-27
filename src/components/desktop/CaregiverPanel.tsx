@@ -61,7 +61,7 @@ export const CaregiverPanel: React.FC<Props> = ({ stage, done, onToggle, onBack 
         </div>
 
         <div>
-          <div className="bg-manila border-2 border-manila-deep rounded-2xl p-5.5">
+          <div className="bg-paper border border-rule rounded-2xl p-5.5">
             <div className="font-clinical text-[10px] uppercase tracking-[0.12em] text-ink-soft font-bold">
               In the room
             </div>

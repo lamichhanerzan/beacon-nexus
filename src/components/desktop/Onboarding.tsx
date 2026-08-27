@@ -48,7 +48,7 @@ export const Onboarding: React.FC<Props> = ({
       })}
     </div>
 
-    <div className="mt-8 p-6 border border-rule rounded-xl bg-manila">
+    <div className="mt-8 p-6 border border-rule rounded-xl bg-paper">
       <div className="text-[17px] font-bold">When did that happen?</div>
       <div className="text-sm text-ink-soft mt-1.5">
         Optional. A date lets us count the days and tell you when a wait has gone longer than

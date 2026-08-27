@@ -98,14 +98,14 @@ export const ScreeningForm: React.FC<ScreeningFormProps> = ({
   return (
     <div className="w-full max-w-3xl mx-auto px-4 py-6 animate-in fade-in duration-300">
       
-      {/* Intro Header */}
-      <div className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 mb-8 shadow-xs">
-        <div className="flex items-center space-x-2 text-signal font-clinical text-xs font-bold uppercase tracking-wider mb-2">
+      {/* Intro Header — sits on paper, no colored banner */}
+      <div className="mb-8 space-y-3">
+        <div className="flex items-center space-x-2 text-signal font-clinical text-xs font-bold uppercase tracking-widest">
           {isCaregiver ? <HeartHandshake className="w-4 h-4" /> : <User className="w-4 h-4" />}
           <span>{isCaregiver ? "Caregiver Screening Check" : "Personal Screening Check"}</span>
         </div>
 
-        <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink leading-tight m-0 mb-3">
+        <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink leading-tight m-0">
           National Guideline Screening Eligibility Check
         </h1>
 

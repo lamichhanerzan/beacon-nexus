@@ -172,14 +172,10 @@ export const AssistantWindow: React.FC<AssistantWindowProps> = ({
       setMessages((prev) => [...prev, userMsg, botMsg]);
     } else if (choice === 'screening') {
       onNavigate('screening');
-      const userMsg: ChatMessage = { id: `u_${Date.now()}`, sender: 'user', text: 'Check my screening eligibility' };
-      const botMsg: ChatMessage = { id: `b_${Date.now()}`, sender: 'assistant', text: 'Opening the Screening Module now...' };
-      setMessages((prev) => [...prev, userMsg, botMsg]);
+      onClose();
     } else if (choice === 'journey') {
       onNavigate('journey');
-      const userMsg: ChatMessage = { id: `u_${Date.now()}`, sender: 'user', text: 'Open my diagnostic journey' };
-      const botMsg: ChatMessage = { id: `b_${Date.now()}`, sender: 'assistant', text: 'Opening the Diagnostic Journey view...' };
-      setMessages((prev) => [...prev, userMsg, botMsg]);
+      onClose();
     }
   };
 
@@ -249,9 +245,9 @@ export const AssistantWindow: React.FC<AssistantWindowProps> = ({
     setMessages((prev) => [...prev, userMsg]);
     const lowerQuery = query.toLowerCase();
 
-    if (lowerQuery.includes('screening') || lowerQuery.includes('due') || lowerQuery.includes('check')) {
+    if (lowerQuery.includes('screening') || lowerQuery.includes('due') || lowerQuery.includes('eligib') || lowerQuery.includes('check')) {
       onNavigate('screening');
-      setMessages((prev) => [...prev, { id: `b_${Date.now()}`, sender: 'assistant', text: 'Opening the Screening Module...' }]);
+      onClose();
       return;
     }
     if (lowerQuery.includes('book') || lowerQuery.includes('appointment') || lowerQuery.includes('schedule')) {
@@ -260,7 +256,7 @@ export const AssistantWindow: React.FC<AssistantWindowProps> = ({
     }
     if (lowerQuery.includes('clinic') || lowerQuery.includes('facility') || lowerQuery.includes('where do i go')) {
       onNavigate('facilities');
-      setMessages((prev) => [...prev, { id: `b_${Date.now()}`, sender: 'assistant', text: 'Opening Healthcare Resources...' }]);
+      onClose();
       return;
     }
     if (lowerQuery.includes('do i have cancer') || lowerQuery.includes('will i survive') || lowerQuery.includes('what is my stage')) {
@@ -278,64 +274,75 @@ export const AssistantWindow: React.FC<AssistantWindowProps> = ({
     }, 600);
   };
 
-  // Size classes — TALLER ratio, not wider
   const sizeClasses =
     windowSize === 'minimized'
-      ? 'w-80 h-14 overflow-hidden'
+      ? 'w-[280px] h-14 overflow-hidden'
       : windowSize === 'expanded'
-      ? 'w-[420px] h-[85vh] max-h-[900px] max-w-[95vw]'
-      : 'w-[380px] h-[75vh] max-h-[750px] max-w-[95vw]';
+      ? 'w-[min(520px,42vw)] h-[min(86vh,900px)] max-w-[calc(100vw-1.5rem)]'
+      : 'w-[min(440px,36vw)] h-[min(78vh,820px)] max-w-[calc(100vw-1.5rem)]';
+
+  const brandMark = (
+    <div className="flex items-center space-x-2">
+      <BeaconLogo size="xs" showWordmark={false} className="text-paper" />
+      <span className="font-display font-bold text-base text-paper tracking-wide m-0">
+        BEACON
+      </span>
+    </div>
+  );
+
+  const windowControls = (
+    <div className="flex items-center space-x-2 group/dots shrink-0">
+      <button
+        type="button"
+        onClick={handleCloseWindow}
+        className="window-control rounded-full bg-[#FF5F57] flex items-center justify-center text-[8px] leading-none text-[#4D0000] cursor-pointer hover:brightness-110 shrink-0"
+        title="Close"
+        aria-label="Close"
+      >
+        <span className="opacity-0 group-hover/dots:opacity-100">×</span>
+      </button>
+      <button
+        type="button"
+        onClick={handleMinimizeWindow}
+        className="window-control rounded-full bg-[#FEBC2E] flex items-center justify-center text-[8px] leading-none text-[#5C4400] cursor-pointer hover:brightness-110 shrink-0"
+        title="Minimize"
+        aria-label="Minimize"
+      >
+        <span className="opacity-0 group-hover/dots:opacity-100">−</span>
+      </button>
+      <button
+        type="button"
+        onClick={handleToggleExpandWindow}
+        className="window-control rounded-full bg-[#28C840] flex items-center justify-center text-[8px] leading-none text-[#0B3D12] cursor-pointer hover:brightness-110 shrink-0"
+        title="Expand"
+        aria-label="Expand"
+      >
+        <span className="opacity-0 group-hover/dots:opacity-100">{windowSize === 'expanded' ? '–' : '+'}</span>
+      </button>
+    </div>
+  );
 
   return (
     <div
       className={`fixed bottom-6 right-6 z-50 bg-paper border-2 border-rule/80 rounded-2xl shadow-2xl flex flex-col transition-all duration-200 overflow-hidden ${sizeClasses} max-sm:fixed max-sm:inset-x-2 max-sm:bottom-2 max-sm:top-12 max-sm:w-auto max-sm:h-auto max-sm:rounded-2xl`}
       role="dialog"
-      aria-label="BEACON Assistant Window"
+      aria-label="BEACON Window"
     >
-      {/* DARK TITLE BAR with oval window controls */}
-      <div className="bg-[#1E1E1E] px-4 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center space-x-2.5">
-          <BeaconLogo size="sm" showWordmark={false} className="text-paper" />
-          <span className="font-display font-bold text-sm text-paper/90 m-0">
-            BEACON Assistant
-          </span>
-        </div>
-
-        {/* Oval Window Controls — macOS style */}
-        <div className="flex items-center space-x-2.5 group/dots">
-          {/* Close (Red) */}
-          <button
-            onClick={handleCloseWindow}
-            className="w-5 h-3.5 rounded-full bg-[#C4553B] flex items-center justify-center text-[10px] font-bold text-[#1E1E1E] transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#C4553B] hover:brightness-110"
-            title="Close" aria-label="Close"
-          >
-            <span className="opacity-0 group-hover/dots:opacity-100 transition-opacity">×</span>
-          </button>
-          {/* Minimize (Yellow) */}
-          <button
-            onClick={handleMinimizeWindow}
-            className="w-5 h-3.5 rounded-full bg-[#D9A441] flex items-center justify-center text-[10px] font-bold text-[#1E1E1E] transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D9A441] hover:brightness-110"
-            title="Minimize" aria-label="Minimize"
-          >
-            <span className="opacity-0 group-hover/dots:opacity-100 transition-opacity">−</span>
-          </button>
-          {/* Expand (Green) */}
-          <button
-            onClick={handleToggleExpandWindow}
-            className="w-5 h-3.5 rounded-full bg-[#4A7C59] flex items-center justify-center text-[10px] font-bold text-[#1E1E1E] transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#4A7C59] hover:brightness-110"
-            title="Expand" aria-label="Expand"
-          >
-            <span className="opacity-0 group-hover/dots:opacity-100 transition-opacity">{windowSize === 'expanded' ? '−' : '+'}</span>
-          </button>
-        </div>
-      </div>
-
       {windowSize === 'minimized' ? (
-        <div className="px-4 py-2 bg-paper text-xs text-ink-soft italic flex items-center justify-between">
-          <span>Assistant minimized</span>
-          <button onClick={() => setWindowSize('compact')} className="text-signal font-bold cursor-pointer">Restore</button>
+        <div className="relative bg-[#1E1E1E] h-14 px-4 flex items-center justify-center shrink-0">
+          {brandMark}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {windowControls}
+          </div>
         </div>
       ) : (
+        <div className="bg-[#1E1E1E] px-4 py-3 flex items-center justify-between shrink-0">
+          {brandMark}
+          {windowControls}
+        </div>
+      )}
+
+      {windowSize === 'minimized' ? null : (
         <>
           {/* TAB BAR — Chat / Recent */}
           <div className="bg-[#282828] border-b border-[#3a3a3a] flex items-center shrink-0">

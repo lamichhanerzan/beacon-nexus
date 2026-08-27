@@ -135,7 +135,7 @@ export const QuestionsPanel: React.FC<Props> = ({
       )}
 
       {mode === 'focus' && questions.length > 0 && (
-        <div className="mt-7 bg-manila border-2 border-manila-deep rounded-2xl p-3">
+        <div className="mt-7 bg-paper border border-rule rounded-2xl p-3">
           <div className="bg-paper border border-rule rounded-xl px-10 py-11 min-h-[260px] flex flex-col">
             <div className="font-clinical text-[11px] uppercase tracking-[0.1em] text-ink-soft font-bold">
               Question {idx + 1} of {questions.length}

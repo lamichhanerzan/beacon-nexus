@@ -98,7 +98,7 @@ export const StageDetail: React.FC<Props> = ({
             </div>
 
             {stage.callScript && (
-              <div className="bg-manila border-2 border-manila-deep rounded-xl px-6 py-5.5 mt-5">
+              <div className="bg-paper border border-rule rounded-xl px-6 py-5.5 mt-5">
                 <div className="flex items-center justify-between gap-4">
                   <span className="font-clinical text-[10px] uppercase tracking-[0.12em] text-ink-soft font-bold">
                     If you need to call &mdash; read this out

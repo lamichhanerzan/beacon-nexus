@@ -133,8 +133,8 @@ export const ScreeningResults: React.FC<ScreeningResultsProps> = ({
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6 space-y-8 animate-in fade-in duration-300 print:p-0">
       
-      {/* Header Banner */}
-      <div className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 shadow-sm space-y-3 print:bg-white print:border-b-2 print:border-black print:p-0">
+      {/* Header — sits on paper, no colored banner */}
+      <div className="space-y-3 print:bg-white print:border-b-2 print:border-black print:p-0">
         <div className="flex items-center justify-between">
           <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider">
             USPSTF National Guidelines Check

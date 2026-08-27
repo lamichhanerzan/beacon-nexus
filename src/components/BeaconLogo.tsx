@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface BeaconLogoProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   showWordmark?: boolean;
   className?: string;
 }
@@ -12,8 +12,18 @@ export const BeaconLogo: React.FC<BeaconLogoProps> = ({
   className = ''
 }) => {
   // Height sizing — Mark is slightly bigger, text is significantly bigger and bolder
-  const markHeight = size === 'sm' ? 36 : size === 'md' ? 52 : size === 'lg' ? 76 : 104;
-  const wordmarkSize = size === 'sm' ? 'text-2xl sm:text-3xl' : size === 'md' ? 'text-3xl sm:text-4xl' : size === 'lg' ? 'text-4xl sm:text-5xl' : 'text-5xl sm:text-6xl';
+  const markHeight =
+    size === 'xs' ? 22 : size === 'sm' ? 36 : size === 'md' ? 52 : size === 'lg' ? 76 : 104;
+  const wordmarkSize =
+    size === 'xs'
+      ? 'text-lg'
+      : size === 'sm'
+        ? 'text-2xl sm:text-3xl'
+        : size === 'md'
+          ? 'text-3xl sm:text-4xl'
+          : size === 'lg'
+            ? 'text-4xl sm:text-5xl'
+            : 'text-5xl sm:text-6xl';
 
   return (
     <div className={`inline-flex items-center space-x-3 text-ink ${className}`}>

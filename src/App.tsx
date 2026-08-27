@@ -319,9 +319,14 @@ export function App() {
           setActiveModule('landing');
           setSelectedAppointment(null);
         }}
+        showBack={activeModule !== 'landing'}
+        onGoBack={() => {
+          setActiveModule('landing');
+          setSelectedAppointment(null);
+        }}
       />
 
-      <main className="flex-1 w-[95vw] max-w-[95vw] mx-auto px-5 sm:px-8 py-4">
+      <main className="flex-1 w-full px-6 lg:px-10 xl:px-12 py-5">
         {activeModule === 'landing' ? (
           /* RESTRUCTURED TWO-COLUMN LANDING PAGE (≥1024px) & SINGLE COLUMN (<1024px) */
           <div className="space-y-8 animate-in fade-in duration-300">
@@ -559,7 +564,7 @@ export function App() {
       </main>
 
       {/* Persistent Global Footer Disclaimer */}
-      <footer className="w-[95vw] max-w-[95vw] mx-auto px-5 sm:px-8 pb-8">
+      <footer className="w-full px-6 lg:px-10 xl:px-12 pb-6">
         <Disclaimer variant="footer" />
         <p className="text-center font-clinical text-xs text-ink-soft mt-4 m-0">
           BEACON Diagnostic Limbo Companion • Built for Nexus Louisiana DevDays
@@ -582,12 +587,11 @@ export function App() {
           setActiveModule('appointments');
         }}
         onNavigate={(route) => {
-          if (route === 'screening') {
+          if (route === 'screening' || route === 'facilities') {
+            setScreeningStep('form');
             setActiveModule('screening');
           } else if (route === 'journey') {
             setActiveModule('spine');
-          } else if (route === 'facilities') {
-            setActiveModule('screening');
           }
         }}
       />
