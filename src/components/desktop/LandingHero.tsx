@@ -88,15 +88,5 @@ export const LandingHero: React.FC<Props> = ({ onStart }) => (
         </div>
       </div>
     </div>
-
-    <div className="mt-12 px-6 py-5 border border-rule border-l-4 border-l-flag rounded-[10px] bg-flag-bg max-w-[900px]">
-      <div className="font-clinical text-[11px] font-bold tracking-[0.1em] uppercase text-flag">
-        Not medical advice
-      </div>
-      <div className="text-[15px] leading-relaxed text-ink-soft mt-2 text-pretty">
-        BEACON explains typical processes and timeframes. It does not diagnose, interpret your
-        results, or replace your care team. If you have severe symptoms, call your clinician or 911.
-      </div>
-    </div>
   </div>
 );

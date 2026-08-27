@@ -10,7 +10,7 @@ import { Disclaimer } from './components/Disclaimer';
 import { ShareLinkModal } from './components/ShareLinkModal';
 import { AtlasModal } from './components/AtlasModal';
 import { JourneyTimelineModal } from './components/JourneyTimelineModal';
-import { ArrowRight, ShieldCheck, Search, Activity, Home } from 'lucide-react';
+import { ArrowRight, Search, Activity, Home } from 'lucide-react';
 
 // Desktop handoff shell components
 import { DesktopHeader, type DesktopScreen } from './components/desktop/DesktopHeader';
@@ -51,7 +51,7 @@ export function App() {
   const [isAtlasModalOpen, setIsAtlasModalOpen] = useState<boolean>(false);
   const [isTimelineModalOpen, setIsTimelineModalOpen] = useState<boolean>(false);
 
-  // Parse URL query parameters on load
+  // Parse URL query parameters and routes on load
   useEffect(() => {
     const pathname = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
@@ -94,8 +94,8 @@ export function App() {
       }
     }
 
-    // 2. Check Diagnostic Spine route / params
-    if (pathname.includes('/c') || searchParams.has('s')) {
+    // 2. Check Journey / Diagnostic Spine route / params
+    if (pathname.includes('/journey') || pathname.includes('/c') || searchParams.has('s')) {
       setActiveModule('spine');
       if (pathname.includes('/c')) {
         setMode('caregiver');
@@ -154,7 +154,6 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Helper function for toggling check marks in Desktop shell
   const toggleMarks = (
     setter: React.Dispatch<React.SetStateAction<Marks>>,
     index: number
@@ -252,15 +251,13 @@ export function App() {
           />
         )}
 
+        {/* Global Persistent Footer Disclaimer */}
         <footer className="mt-auto border-t border-rule bg-paper">
-          <div className="max-w-6xl mx-auto px-8 py-6 flex items-center gap-5">
-            <p className="text-[13px] text-ink-soft leading-relaxed max-w-[80ch] m-0">
-              BEACON explains typical processes and timeframes. It is not medical advice and cannot
-              interpret your results. Call your care team with anything urgent.
+          <div className="max-w-6xl mx-auto px-8 py-6">
+            <Disclaimer variant="footer" />
+            <p className="text-center font-clinical text-xs text-ink-soft mt-3 m-0">
+              BEACON Diagnostic Limbo Companion • Built for Nexus Louisiana DevDays
             </p>
-            <span className="ml-auto font-clinical text-[11px] text-ink-soft whitespace-nowrap">
-              Built for Nexus Louisiana DevDays
-            </span>
           </div>
         </footer>
       </div>
@@ -270,7 +267,7 @@ export function App() {
   // Standard BEACON App View
   return (
     <div className="min-h-screen bg-paper text-ink flex flex-col font-sans selection:bg-signal-light selection:text-signal">
-      {/* Top Header tab bar */}
+      {/* Top Header tab bar with persistent Patient/Caregiver mode toggle */}
       <Header
         mode={mode}
         onModeChange={(newMode) => setMode(newMode)}
@@ -292,35 +289,29 @@ export function App() {
 
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-2">
         {activeModule === 'landing' ? (
-          /* REVAMPED LANDING PAGE */
+          /* RESTRUCTURED LANDING PAGE */
           <div className="space-y-10 py-4 sm:py-8 animate-in fade-in duration-300 max-w-4xl mx-auto">
             
-            {/* Headline & Subhead */}
-            <div className="text-center space-y-3">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-manila border border-manila-deep text-ink-soft font-clinical text-xs font-semibold">
-                <ShieldCheck className="w-4 h-4 text-signal" />
-                <span>Nexus LA Innovation & Ochsner Health Companion</span>
-              </div>
-
-              <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-ink leading-tight m-0">
-                Cancer care starts before the diagnosis.
-              </h1>
-
-              <p className="text-lg sm:text-xl text-ink-soft leading-relaxed max-w-2xl mx-auto m-0">
-                Find out what screenings you're due for, or get your bearings if something's already been found.
+            {/* Logo / Wordmark Header & Tagline */}
+            <div className="text-center space-y-2">
+              <span className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-ink block">
+                BEACON
+              </span>
+              <p className="font-display italic text-lg sm:text-xl text-ink-soft m-0">
+                "Cancer care starts before the diagnosis."
               </p>
             </div>
 
-            {/* TWO LARGE CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            {/* TWO PRIMARY CARDS */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
               
-              {/* CARD A — I haven't been screened yet (Slightly more visual weight: --manila fill) */}
+              {/* CARD A — "I haven't been screened yet" (--manila fill, higher visual weight) */}
               <div
                 onClick={() => {
                   setActiveModule('screening');
                   setScreeningStep('form');
                 }}
-                className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+                className="bg-manila border-2 border-manila-deep rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group min-h-[220px]"
               >
                 <div className="space-y-3">
                   <div className="p-3 rounded-full bg-paper/80 text-signal inline-block border border-rule">
@@ -331,8 +322,8 @@ export function App() {
                     I haven't been screened yet
                   </h2>
 
-                  <p className="text-base sm:text-lg text-ink-soft leading-relaxed m-0 italic">
-                    "Find out which tests you're eligible for and where to get them."
+                  <p className="text-base text-ink-soft leading-relaxed m-0 italic">
+                    "Find out which tests you're due for and where to get them near you."
                   </p>
                 </div>
 
@@ -342,10 +333,10 @@ export function App() {
                 </div>
               </div>
 
-              {/* CARD B — Something was found (--paper fill with --rule border) */}
+              {/* CARD B — "I've been screened" (--paper fill with --rule border) */}
               <div
                 onClick={() => setActiveModule('spine')}
-                className="bg-paper border-2 border-rule rounded-2xl p-6 sm:p-8 shadow-xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group hover:border-manila-deep"
+                className="bg-paper border-2 border-rule rounded-2xl p-6 sm:p-8 shadow-xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group hover:border-manila-deep min-h-[220px]"
               >
                 <div className="space-y-3">
                   <div className="p-3 rounded-full bg-manila/30 text-ink-soft inline-block border border-rule">
@@ -353,16 +344,16 @@ export function App() {
                   </div>
 
                   <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink group-hover:text-signal transition-colors m-0">
-                    Something was found
+                    I've been screened
                   </h2>
 
-                  <p className="text-base sm:text-lg text-ink-soft leading-relaxed m-0 italic">
-                    "Understand where you are, what's next, and what to ask."
+                  <p className="text-base text-ink-soft leading-relaxed m-0 italic">
+                    "Something was found, or you're waiting on results."
                   </p>
                 </div>
 
                 <div className="pt-6 flex items-center text-ink-soft font-sans font-bold text-base group-hover:text-ink group-hover:translate-x-1 transition-all">
-                  <span>Open Diagnostic Companion</span>
+                  <span>Open Diagnostic Journey</span>
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </div>
               </div>
@@ -373,7 +364,7 @@ export function App() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-rule/60">
               <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
                 <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
-                  Most Screenings Are Free
+                  Most screenings are free
                 </span>
                 <p className="text-sm text-ink-soft m-0 leading-relaxed">
                   Under the Affordable Care Act, most insurance covers preventive cancer screening with no copay.
@@ -382,7 +373,7 @@ export function App() {
 
               <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
                 <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
-                  Colon Screening Starts at 45
+                  Colon screening starts at 45
                 </span>
                 <p className="text-sm text-ink-soft m-0 leading-relaxed">
                   This changed in 2021. Many people still think it's 50.
@@ -391,16 +382,14 @@ export function App() {
 
               <div className="p-4 rounded-xl border border-rule bg-paper space-y-1">
                 <span className="font-clinical text-xs font-bold text-signal uppercase tracking-wider block">
-                  Some Tests Done at Home
+                  Some tests are done at home
                 </span>
                 <p className="text-sm text-ink-soft m-0 leading-relaxed">
-                  Stool-based colorectal tests are mailed to your home and mailed back.
+                  Stool-based colorectal tests are mailed to you.
                 </p>
               </div>
             </div>
 
-            {/* Mandatory Landing Disclaimer */}
-            <Disclaimer variant="landing" />
           </div>
         ) : activeModule === 'screening' ? (
           /* SCREENING MODULE */
@@ -421,7 +410,7 @@ export function App() {
             )}
           </div>
         ) : (
-          /* DIAGNOSTIC SPINE MODULE */
+          /* DIAGNOSTIC JOURNEY MODULE */
           <div className="animate-in fade-in duration-300">
             <SpineView
               currentStageId={stageId}
@@ -443,7 +432,7 @@ export function App() {
         )}
       </main>
 
-      {/* Persistent Footer Disclaimer */}
+      {/* Persistent Global Footer Disclaimer (One of exactly two disclaimers in the app) */}
       <footer className="w-full max-w-4xl mx-auto px-4 pb-8">
         <Disclaimer variant="footer" />
         <p className="text-center font-clinical text-xs text-ink-soft mt-4 m-0">

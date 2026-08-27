@@ -74,8 +74,8 @@ export function evaluateScreenings(input: ScreeningInput): ScreeningResult[] {
         id: 'breast',
         name: 'Breast Cancer Screening (Individual Discussion)',
         status: 'discuss',
-        reason: 'Guidelines start at 40, but a family history of breast or ovarian cancer may mean starting earlier. This is worth discussing with a doctor.',
-        guideline: 'USPSTF recommends individual risk assessment and discussion for higher-risk individuals under age 40.'
+        reason: 'Guidelines start at 40, but family history may mean starting earlier. Worth discussing with a doctor.',
+        guideline: 'USPSTF recommends mammography every 2 years for women ages 40 to 74.'
       });
     } else {
       results.push({
@@ -84,7 +84,7 @@ export function evaluateScreenings(input: ScreeningInput): ScreeningResult[] {
         status: 'not_applicable',
         reason: age < 40
           ? 'Routine USPSTF mammography screening is recommended starting at age 40 for average-risk women.'
-          : 'Routine USPSTF mammography screening is recommended through age 74. For age 75+, discuss individual health goals with your provider.',
+          : 'Routine USPSTF mammography screening is recommended through age 74.',
         guideline: 'USPSTF recommends mammography every 2 years for women ages 40 to 74.'
       });
     }
@@ -169,27 +169,27 @@ export function evaluateScreenings(input: ScreeningInput): ScreeningResult[] {
       reason,
       guideline: 'USPSTF recommends colorectal cancer screening for everyone ages 45 to 75.',
       options: [
-        'Colonoscopy — every 10 years. Done at a hospital or endoscopy center.',
-        'Stool test (FIT) — every year. Mailed to your home, done at home, mailed back.',
-        'Stool DNA test (Cologuard) — every 3 years. Also done at home.',
-        'CT colonography — every 5 years.'
+        'Colonoscopy — every 10 years, at a hospital or endoscopy center',
+        'Stool test (FIT) — every year, mailed to your home, done at home, mailed back',
+        'Stool DNA test (Cologuard) — every 3 years, also at home',
+        'CT colonography — every 5 years'
       ],
-      notes: 'If travel is a barrier, the at-home stool tests are a real option. Ask your doctor or clinic about getting one mailed to you.'
+      notes: 'If travel is a barrier, the at-home stool tests are a real option. Ask your clinic about getting one mailed to you.'
     });
   } else if (age < 45 && hasColorectalFamilyHistory) {
     results.push({
       id: 'colorectal',
       name: 'Colorectal Cancer Screening (Early Discussion)',
       status: 'discuss',
-      reason: 'Guidelines start at 45, but a parent, sibling, or child with colorectal cancer often means starting at 40 — or 10 years before their diagnosis age, whichever comes first. Worth discussing with a doctor.',
-      guideline: 'USPSTF recommends starting colorectal screening earlier for individuals with a first-degree family history.',
+      reason: 'Guidelines start at 45, but a parent, sibling, or child with colorectal cancer often means starting at 40 — or 10 years before their diagnosis age, whichever is earlier.',
+      guideline: 'USPSTF recommends colorectal cancer screening for everyone ages 45 to 75.',
       options: [
-        'Colonoscopy — every 10 years. Done at a hospital or endoscopy center.',
-        'Stool test (FIT) — every year. Mailed to your home, done at home, mailed back.',
-        'Stool DNA test (Cologuard) — every 3 years. Also done at home.',
-        'CT colonography — every 5 years.'
+        'Colonoscopy — every 10 years, at a hospital or endoscopy center',
+        'Stool test (FIT) — every year, mailed to your home, done at home, mailed back',
+        'Stool DNA test (Cologuard) — every 3 years, also at home',
+        'CT colonography — every 5 years'
       ],
-      notes: 'If travel is a barrier, the at-home stool tests are a real option. Ask your doctor or clinic about getting one mailed to you.'
+      notes: 'If travel is a barrier, the at-home stool tests are a real option. Ask your clinic about getting one mailed to you.'
     });
   } else {
     results.push({
@@ -198,7 +198,7 @@ export function evaluateScreenings(input: ScreeningInput): ScreeningResult[] {
       status: 'not_applicable',
       reason: age < 45
         ? 'Routine colorectal cancer screening begins at age 45 for average-risk individuals.'
-        : 'Routine screening is recommended through age 75. For ages 76 to 85, screening decisions are individualized based on overall health.',
+        : 'Routine screening is recommended through age 75.',
       guideline: 'USPSTF recommends colorectal cancer screening for everyone ages 45 to 75.'
     });
   }
@@ -266,8 +266,8 @@ export function evaluateScreenings(input: ScreeningInput): ScreeningResult[] {
         id: 'prostate',
         name: 'Prostate Cancer Screening (PSA Test)',
         status: 'discuss',
-        reason: 'This one is a conversation, not a checkbox. The benefits and harms are close enough that guidelines say it should be your decision, made with a doctor.',
-        guideline: 'USPSTF recommends that men ages 55 to 69 make an individual decision about PSA screening with their doctor. It is not automatically recommended.'
+        reason: 'This one is a conversation, not a checkbox. Benefits and harms are close enough that guidelines say it should be your decision, made with a doctor.',
+        guideline: 'USPSTF recommends that men ages 55 to 69 make an individual decision with their doctor. It is not automatically recommended.'
       });
     } else if (age >= 70) {
       results.push({
@@ -275,7 +275,7 @@ export function evaluateScreenings(input: ScreeningInput): ScreeningResult[] {
         name: 'Prostate Cancer Screening (PSA Test)',
         status: 'not_applicable',
         reason: 'USPSTF does not recommend routine PSA screening after 70.',
-        guideline: 'USPSTF does not recommend routine PSA screening after 70.'
+        guideline: 'USPSTF recommends that men ages 55 to 69 make an individual decision with their doctor. It is not automatically recommended.'
       });
     } else {
       results.push({
@@ -283,7 +283,7 @@ export function evaluateScreenings(input: ScreeningInput): ScreeningResult[] {
         name: 'Prostate Cancer Screening (PSA Test)',
         status: 'not_applicable',
         reason: 'Routine PSA screening is not recommended prior to age 55 for average-risk individuals.',
-        guideline: 'USPSTF recommends individual discussion starting at age 55 for men at average risk.'
+        guideline: 'USPSTF recommends that men ages 55 to 69 make an individual decision with their doctor. It is not automatically recommended.'
       });
     }
   }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ScreeningResult, ScreeningInput } from '../lib/screening';
 import { findMatchingFacilities } from '../lib/facilities';
-import { Printer, Share2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, HeartHandshake } from 'lucide-react';
+import { Printer, Share2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, HeartHandshake, BookOpen } from 'lucide-react';
 
 interface ScreeningResultsProps {
   input: ScreeningInput;
@@ -9,6 +9,39 @@ interface ScreeningResultsProps {
   mode: 'patient' | 'caregiver';
   onEditInputs: () => void;
 }
+
+const READING_LIST = [
+  {
+    source: 'National Cancer Institute',
+    title: 'NCI Cancer Screening Overview',
+    url: 'https://www.cancer.gov/about-cancer/screening',
+    description: 'Evidence-based summaries on screening benefits, risks, and recommended testing guidelines.'
+  },
+  {
+    source: 'American Cancer Society',
+    title: 'ACS Cancer Screening Guidelines by Age',
+    url: 'https://www.cancer.org/healthy/find-cancer-early/screening-recommendations-by-age.html',
+    description: 'Clear breakdown of which cancer screening tests to get throughout adulthood.'
+  },
+  {
+    source: 'Centers for Disease Control and Prevention',
+    title: 'CDC Cancer Prevention & Control',
+    url: 'https://www.cdc.gov/cancer/prevention/index.html',
+    description: 'Public health guidance on lowering cancer risk and staying up to date on screenings.'
+  },
+  {
+    source: 'U.S. Preventive Services Task Force',
+    title: 'USPSTF Published Recommendations',
+    url: 'https://www.uspreventiveservicestaskforce.org/uspstf/recommendation-topics/uspstf-a-and-b-recommendations',
+    description: 'The authoritative national scientific panel recommendations for preventive screening.'
+  },
+  {
+    source: 'Louisiana Department of Health',
+    title: 'Louisiana Breast & Cervical Health Program',
+    url: 'https://www.lbchp.org/',
+    description: 'Statewide program offering no-cost mammograms and Pap tests for qualifying Louisiana residents.'
+  }
+];
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -141,10 +174,10 @@ export const ScreeningResults: React.FC<ScreeningResultsProps> = ({
         <div className="p-5 rounded-xl border-2 border-signal bg-signal-light/40 space-y-2 print:border-black">
           <h3 className="font-display text-lg font-bold text-signal m-0 flex items-center space-x-2">
             <HeartHandshake className="w-5 h-5" />
-            <span>What you can do as a caregiver</span>
+            <span>What you can do</span>
           </h3>
           <p className="text-base text-ink leading-relaxed m-0">
-            Offer to make the appointment call. Many people put off screening because scheduling feels like a hurdle, not because they don't want to go. If travel is the barrier, ask about the at-home stool test option.
+            Offer to make the appointment call. People often put off screening because scheduling feels like a hurdle, not because they don't want to go. If travel is the barrier, ask about the at-home stool test.
           </p>
         </div>
       )}
@@ -160,6 +193,7 @@ export const ScreeningResults: React.FC<ScreeningResultsProps> = ({
             matchedFacilities={matchedFacilities}
             zip={input.zip}
             parishSlug={input.parishSlug}
+            isCaregiver={isCaregiver}
           />
         ))}
 
@@ -171,6 +205,7 @@ export const ScreeningResults: React.FC<ScreeningResultsProps> = ({
             matchedFacilities={matchedFacilities}
             zip={input.zip}
             parishSlug={input.parishSlug}
+            isCaregiver={isCaregiver}
           />
         ))}
 
@@ -182,6 +217,7 @@ export const ScreeningResults: React.FC<ScreeningResultsProps> = ({
             matchedFacilities={matchedFacilities}
             zip={input.zip}
             parishSlug={input.parishSlug}
+            isCaregiver={isCaregiver}
           />
         ))}
 
@@ -193,6 +229,7 @@ export const ScreeningResults: React.FC<ScreeningResultsProps> = ({
             matchedFacilities={matchedFacilities}
             zip={input.zip}
             parishSlug={input.parishSlug}
+            isCaregiver={isCaregiver}
           />
         ))}
 
@@ -215,12 +252,44 @@ export const ScreeningResults: React.FC<ScreeningResultsProps> = ({
                   matchedFacilities={matchedFacilities}
                   zip={input.zip}
                   parishSlug={input.parishSlug}
+                  isCaregiver={isCaregiver}
                 />
               ))}
             </div>
           </div>
         )}
 
+      </div>
+
+      {/* WORTH READING SECTION */}
+      <div className="p-6 rounded-xl border border-rule bg-paper shadow-xs space-y-4 print:border-black">
+        <h3 className="font-display text-xl font-bold text-ink m-0 flex items-center space-x-2">
+          <BookOpen className="w-5 h-5 text-signal" />
+          <span>Worth reading</span>
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          {READING_LIST.map((article, aIdx) => (
+            <a
+              key={aIdx}
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block p-4 rounded-lg border border-rule bg-paper hover:bg-manila/30 transition-colors group space-y-1.5"
+            >
+              <div className="font-clinical text-[11px] font-bold text-signal uppercase tracking-wider flex items-center justify-between">
+                <span>{article.source}</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+              <div className="font-sans font-bold text-base text-ink group-hover:text-signal transition-colors">
+                {article.title}
+              </div>
+              <p className="text-xs text-ink-soft m-0 leading-relaxed">
+                {article.description}
+              </p>
+            </a>
+          ))}
+        </div>
       </div>
 
       {/* STATEWIDE RESOURCES BLOCK */}
@@ -263,9 +332,9 @@ export const ScreeningResults: React.FC<ScreeningResultsProps> = ({
         </p>
       </div>
 
-      {/* Mandatory Results Disclaimer */}
+      {/* Mandatory Screening Results Disclaimer (One of exactly two disclaimers in the app) */}
       <div className="p-4 rounded-lg border border-rule/60 bg-paper/50 text-xs text-ink-soft italic leading-relaxed">
-        *This is based on national screening guidelines from the U.S. Preventive Services Task Force. It doesn't tell you whether you have cancer — only which tests you're eligible for. Your doctor may recommend something different based on your personal history.
+        *Based on national screening guidelines from the U.S. Preventive Services Task Force. This doesn't tell you whether you have cancer — only which tests you're eligible for. Your doctor may recommend something different based on your history.
       </div>
 
       {/* Bottom Actions: Print & Share */}
@@ -303,9 +372,14 @@ interface ScreeningCardProps {
   matchedFacilities: ReturnType<typeof findMatchingFacilities>;
   zip?: string;
   parishSlug?: string;
+  isCaregiver?: boolean;
 }
 
-const ScreeningCard: React.FC<ScreeningCardProps> = ({ item, matchedFacilities, zip, parishSlug }) => {
+const ScreeningCard: React.FC<ScreeningCardProps> = ({ item, matchedFacilities, zip, parishSlug, isCaregiver }) => {
+  const reasonText = isCaregiver
+    ? item.reason.replace(/\bYou are\b/gi, 'They are').replace(/\bYou have\b/gi, 'They have').replace(/\bYou indicated\b/gi, 'They indicated').replace(/\bYour\b/gi, 'Their').replace(/\bYou\b/gi, 'They')
+    : item.reason;
+
   return (
     <div className="p-6 rounded-xl border border-rule bg-paper shadow-xs space-y-4 print:border-black print:p-4 print:shadow-none break-inside-avoid">
       <div className="flex items-start justify-between gap-4 border-b border-rule/60 pb-3">
@@ -316,7 +390,7 @@ const ScreeningCard: React.FC<ScreeningCardProps> = ({ item, matchedFacilities, 
       </div>
 
       <p className="text-base text-ink leading-relaxed m-0 font-medium">
-        {item.reason}
+        {reasonText}
       </p>
 
       {/* Colorectal Options if present */}
@@ -373,7 +447,7 @@ const ScreeningCard: React.FC<ScreeningCardProps> = ({ item, matchedFacilities, 
             Where to go:
           </h4>
           <p className="m-0 leading-relaxed text-ink-soft">
-            Ask your primary care provider, or find a community health center near you. Community health centers serve everyone regardless of ability to pay, on a sliding scale.
+            Ask {isCaregiver ? 'their' : 'your'} primary care provider, or find a community health center near you. They serve everyone regardless of ability to pay, on a sliding scale.
           </p>
           <div className="flex flex-wrap items-center gap-4 pt-1">
             <a
@@ -382,11 +456,11 @@ const ScreeningCard: React.FC<ScreeningCardProps> = ({ item, matchedFacilities, 
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-1 font-clinical font-bold text-signal hover:underline"
             >
-              <span>HRSA Find a Health Center</span>
+              <span>Find a Health Center</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
             <span className="text-ink-soft">•</span>
-            <span className="font-clinical">Call <strong>Louisiana 211</strong> (dial 211)</span>
+            <span className="font-clinical">Call <strong>Louisiana 211</strong> — dial 211</span>
           </div>
         </div>
       )}

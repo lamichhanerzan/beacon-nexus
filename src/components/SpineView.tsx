@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { STAGES } from '../content/stages';
 import { PARISHES } from '../content/resources';
 import { computeDwell } from '../lib/dwell';
+import { formatCaregiverText } from '../lib/caregiverGrammar';
 import { CallScriptCard } from './CallScriptCard';
 import { QuestionsList } from './QuestionsList';
 import { RedFlagPanel } from './RedFlagPanel';
@@ -43,6 +44,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
 
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
+  const isCaregiver = mode === 'caregiver';
   const currentStageIndex = STAGES.findIndex((s) => s.id === currentStageId);
   const activeStage = STAGES[currentStageIndex] || STAGES[0];
 
@@ -74,6 +76,16 @@ export const SpineView: React.FC<SpineViewProps> = ({
     onStageDateChange(activeStage.id, newDate);
   };
 
+  const handleStageClick = (stageId: string) => {
+    if (stageId === currentStageId) {
+      // Toggle collapse/expand by passing empty string or re-selecting
+      onSelectStage(stageId);
+    } else {
+      // Expanding a new stage automatically collapses the previous one
+      onSelectStage(stageId);
+    }
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pb-16">
       
@@ -86,10 +98,10 @@ export const SpineView: React.FC<SpineViewProps> = ({
         <aside className="hidden lg:block lg:w-[280px] lg:shrink-0 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto pr-2 scrollbar-thin">
           <div className="mb-4">
             <h2 className="font-display text-lg font-bold text-ink m-0">
-              Diagnostic Spine
+              Diagnostic Journey
             </h2>
             <p className="text-xs text-ink-soft m-0">
-              Select a stage to view details
+              {isCaregiver ? "Select a step to view their chart" : "Select a step to view your chart"}
             </p>
           </div>
 
@@ -100,10 +112,12 @@ export const SpineView: React.FC<SpineViewProps> = ({
               const recordedDate = stageDates[stage.id];
 
               return (
-                <div
+                <button
                   key={stage.id}
-                  onClick={() => onSelectStage(stage.id)}
-                  className={`relative group p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer ${
+                  type="button"
+                  aria-expanded={isCurrent}
+                  onClick={() => handleStageClick(stage.id)}
+                  className={`w-full relative group p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal ${
                     isCurrent
                       ? 'bg-manila/80 border-l-4 border-l-signal border-rule shadow-xs font-semibold'
                       : isCompleted
@@ -138,7 +152,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
                       <span>{new Date(recordedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                     </div>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -156,11 +170,11 @@ export const SpineView: React.FC<SpineViewProps> = ({
                 This is what the road usually looks like.
               </h2>
               <p className="text-base text-ink-soft m-0 mt-1">
-                Tap where you are to open your personal chart folder.
+                {isCaregiver ? "Tap a step to open their chart folder." : "Tap a step to open your chart folder."}
               </p>
             </div>
 
-            {/* Mobile Stacked Accordion List */}
+            {/* Mobile Stacked Accordion List with Collapsible Animation */}
             <div className="relative border-l-2 border-manila-deep pl-4 sm:pl-6 space-y-4">
               {STAGES.map((stage, idx) => {
                 const isCurrent = stage.id === currentStageId;
@@ -180,8 +194,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
                     </div>
 
                     <div
-                      onClick={() => onSelectStage(stage.id)}
-                      className={`rounded-xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
+                      className={`rounded-xl border-2 transition-all duration-300 overflow-hidden ${
                         isCurrent
                           ? 'border-signal bg-paper shadow-md translate-x-1'
                           : isCompleted
@@ -189,7 +202,12 @@ export const SpineView: React.FC<SpineViewProps> = ({
                           : 'border-rule/60 bg-paper/60 hover:bg-paper text-ink-soft/80'
                       }`}
                     >
-                      <div className="p-4 sm:p-5 flex items-center justify-between">
+                      <button
+                        type="button"
+                        aria-expanded={isCurrent}
+                        onClick={() => handleStageClick(stage.id)}
+                        className="w-full p-4 sm:p-5 flex items-center justify-between text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
+                      >
                         <div className="flex items-center space-x-3">
                           <span className="font-clinical text-xs font-bold px-2 py-0.5 rounded bg-manila-deep/40 text-ink">
                             0{stage.order}
@@ -206,28 +224,34 @@ export const SpineView: React.FC<SpineViewProps> = ({
                           </div>
                         </div>
 
-                        <ChevronDown className={`w-5 h-5 text-ink-soft transition-transform duration-280 ${isCurrent ? 'rotate-180 text-signal' : ''}`} />
-                      </div>
+                        <ChevronDown className={`w-5 h-5 text-ink-soft transition-transform duration-200 ease-out ${isCurrent ? 'rotate-180 text-signal' : ''}`} />
+                      </button>
 
-                      {/* Mobile Expanded Folder Content */}
-                      {isCurrent && (
-                        <div className="px-4 pb-6 sm:px-6 sm:pb-8 border-t border-rule/60 pt-4 space-y-6">
-                          <FullStageContent
-                            stage={activeStage}
-                            dateEntered={dateEntered}
-                            onDateInputChange={handleDateInputChange}
-                            parishSlug={parishSlug}
-                            onParishChange={onParishChange}
-                            dwell={dwell}
-                            mode={mode}
-                            tappedQuestions={tappedQuestions}
-                            handleToggleQuestion={handleToggleQuestion}
-                            onOpenShareModal={onOpenShareModal}
-                            onOpenTimelineModal={onOpenTimelineModal}
-                            setIsVisitSummaryOpen={setIsVisitSummaryOpen}
-                          />
-                        </div>
-                      )}
+                      {/* Mobile Collapsible Panel with 200ms ease-out animation */}
+                      <div
+                        className={`transition-all duration-200 ease-out overflow-hidden ${
+                          isCurrent ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                      >
+                        {isCurrent && (
+                          <div className="px-4 pb-6 sm:px-6 sm:pb-8 border-t border-rule/60 pt-4 space-y-6">
+                            <FullStageContent
+                              stage={activeStage}
+                              dateEntered={dateEntered}
+                              onDateInputChange={handleDateInputChange}
+                              parishSlug={parishSlug}
+                              onParishChange={onParishChange}
+                              dwell={dwell}
+                              mode={mode}
+                              tappedQuestions={tappedQuestions}
+                              handleToggleQuestion={handleToggleQuestion}
+                              onOpenShareModal={onOpenShareModal}
+                              onOpenTimelineModal={onOpenTimelineModal}
+                              setIsVisitSummaryOpen={setIsVisitSummaryOpen}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -271,7 +295,7 @@ export const SpineView: React.FC<SpineViewProps> = ({
   );
 };
 
-/* REUSABLE FULL STAGE CONTENT COMPONENT FOR DESKTOP AND MOBILE EXPANDED PANEL */
+/* REUSABLE FULL STAGE CONTENT COMPONENT WITH CAREGIVER GRAMMAR FIXES */
 interface FullStageContentProps {
   stage: typeof STAGES[0];
   dateEntered: string;
@@ -301,6 +325,8 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
   onOpenTimelineModal,
   setIsVisitSummaryOpen
 }) => {
+  const isCaregiver = mode === 'caregiver';
+
   return (
     <div className="space-y-6">
       {/* Top Header Card Title & Actions */}
@@ -316,10 +342,10 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
 
         <button
           onClick={onOpenTimelineModal}
-          className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-md font-clinical text-xs font-semibold bg-manila hover:bg-manila-deep text-ink transition-colors cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-md font-clinical text-xs font-semibold bg-manila hover:bg-manila-deep text-ink transition-colors cursor-pointer self-start sm:self-auto focus:outline-none focus:ring-2 focus:ring-signal"
         >
           <Clock className="w-4 h-4 text-signal" />
-          <span>My Timeline</span>
+          <span>{isCaregiver ? "Their Timeline" : "My Timeline"}</span>
         </button>
       </div>
 
@@ -382,13 +408,13 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
             <div className="relative group inline-block cursor-help" tabIndex={0}>
               <Info className="w-3.5 h-3.5 text-ink-soft hover:text-ink transition-colors" />
               <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block group-focus:block w-64 p-2.5 bg-ink text-paper text-xs rounded-md shadow-lg z-30 font-sans pointer-events-none leading-snug">
-                Stall risk describes how long you have been waiting at this step compared to published timelines. It is not a medical assessment.
+                Stall risk describes how long {isCaregiver ? "they have" : "you have"} been waiting at this step compared to published timelines. It is not a medical assessment.
               </div>
             </div>
           </div>
 
           <p className="text-base sm:text-lg font-medium text-ink m-0 pt-1">
-            {dwell.verdict}
+            {formatCaregiverText(dwell.verdict, isCaregiver)}
           </p>
         </div>
 
@@ -410,7 +436,7 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
       </div>
 
       {/* SECTION 2 & 5 / Caregiver Guidance depending on Mode */}
-      {mode === 'patient' ? (
+      {!isCaregiver ? (
         <>
           {/* What's Happening */}
           <div className="space-y-2">
@@ -490,31 +516,31 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
             <div className="pt-3">
               <button
                 onClick={() => setIsVisitSummaryOpen(true)}
-                className="w-full flex items-center justify-center space-x-2 px-5 py-3.5 rounded-lg font-sans text-base font-semibold bg-manila hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer"
+                className="w-full flex items-center justify-center space-x-2 px-5 py-3.5 rounded-lg font-sans text-base font-semibold bg-manila hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
               >
                 <FileText className="w-5 h-5 text-signal" />
-                <span>Prepare for my appointment</span>
+                <span>Prepare for appointment</span>
               </button>
             </div>
           </div>
         </>
       ) : (
-        /* CAREGIVER MODE CONTENT */
+        /* CAREGIVER MODE CONTENT WITH STRICT THIRD-PERSON GRAMMAR */
         <div className="space-y-6">
           {/* Situation */}
           <div className="p-4 rounded-lg bg-manila/30 border border-rule space-y-1">
             <h4 className="font-display font-semibold text-lg text-ink m-0">
-              Caregiver Situation
+              Where they are
             </h4>
             <p className="text-base text-ink m-0 leading-relaxed">
-              {stage.caregiver.situation}
+              {formatCaregiverText(stage.caregiver.situation, true)}
             </p>
           </div>
 
           {/* Actions */}
           <div className="space-y-3">
             <h4 className="font-display font-semibold text-lg text-ink m-0">
-              Concrete Actions You Can Take
+              Useful things to do this week
             </h4>
             <ul className="space-y-2 m-0 p-0 list-none">
               {stage.caregiver.actions.map((act, aIdx) => (
@@ -525,7 +551,7 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
                   <span className="font-clinical font-bold text-signal text-sm mt-0.5">
                     ✓
                   </span>
-                  <span>{act}</span>
+                  <span>{formatCaregiverText(act, true)}</span>
                 </li>
               ))}
             </ul>
@@ -535,19 +561,19 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-lg bg-paper border border-rule space-y-1">
               <h5 className="font-sans font-semibold text-sm text-ink m-0">
-                At the Appointment
+                In the room
               </h5>
               <p className="text-sm text-ink-soft m-0 leading-relaxed">
-                {stage.caregiver.atAppointment}
+                {formatCaregiverText(stage.caregiver.atAppointment, true)}
               </p>
             </div>
 
             <div className="p-4 rounded-lg bg-flag-bg border border-flag/30 space-y-1">
               <h5 className="font-sans font-semibold text-sm text-flag m-0">
-                What to Stop Doing
+                Stop doing this
               </h5>
               <p className="text-sm text-ink-soft m-0 leading-relaxed">
-                {stage.caregiver.stopDoing}
+                {formatCaregiverText(stage.caregiver.stopDoing, true)}
               </p>
             </div>
           </div>
@@ -555,7 +581,7 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
           {/* Questions to ask for Caregiver */}
           <div className="space-y-3">
             <h4 className="font-display font-semibold text-lg text-ink m-0">
-              Questions to Ask Together
+              Questions to ask their care team
             </h4>
             <QuestionsList
               questions={stage.questions}
@@ -563,14 +589,14 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
               onToggleQuestion={handleToggleQuestion}
             />
 
-            {/* PREPARE FOR MY APPOINTMENT BUTTON */}
+            {/* PREPARE FOR THEIR APPOINTMENT BUTTON */}
             <div className="pt-3">
               <button
                 onClick={() => setIsVisitSummaryOpen(true)}
-                className="w-full flex items-center justify-center space-x-2 px-5 py-3.5 rounded-lg font-sans text-base font-semibold bg-manila hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer"
+                className="w-full flex items-center justify-center space-x-2 px-5 py-3.5 rounded-lg font-sans text-base font-semibold bg-manila hover:bg-manila-deep text-ink transition-colors border border-rule cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
               >
                 <FileText className="w-5 h-5 text-signal" />
-                <span>Prepare for my appointment</span>
+                <span>Prepare for their appointment</span>
               </button>
             </div>
           </div>
@@ -590,10 +616,10 @@ const FullStageContent: React.FC<FullStageContentProps> = ({
       <div className="pt-4 border-t border-rule/60 text-center">
         <button
           onClick={onOpenShareModal}
-          className="inline-flex items-center justify-center space-x-2 px-6 py-3.5 rounded-lg font-sans text-base font-semibold bg-signal text-paper hover:bg-signal/90 transition-colors shadow-xs cursor-pointer"
+          className="inline-flex items-center justify-center space-x-2 px-6 py-3.5 rounded-lg font-sans text-base font-semibold bg-signal text-paper hover:bg-signal/90 transition-colors shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-signal"
         >
           <Share2 className="w-5 h-5" />
-          <span>Share with someone helping me</span>
+          <span>{isCaregiver ? "Share this summary with them" : "Share with someone helping me"}</span>
         </button>
       </div>
     </div>
